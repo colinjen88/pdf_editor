@@ -161,6 +161,12 @@
                 <input type="file" id="file-upload" accept="application/pdf" class="hidden">
             </label>
 
+            <button onclick="openCompressModal()"
+                class="bg-vibe-surface hover:bg-gray-700 text-sm px-4 py-2 rounded-lg border border-vibe-border transition-colors flex items-center gap-2">
+                <i class="ph ph-arrows-in text-lg"></i>
+                <span>壓縮 PDF</span>
+            </button>
+
             <button onclick="downloadPdf()"
                 class="bg-indigo-600 hover:bg-indigo-500 text-white text-sm px-4 py-2 rounded-lg shadow-lg shadow-indigo-500/20 transition-all flex items-center gap-2 font-medium">
                 <i class="ph ph-download-simple text-lg"></i>
@@ -258,6 +264,63 @@
         </button>
     </footer>
 
+    <!-- 壓縮設定視窗 -->
+    <div id="compress-modal"
+        class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden items-center justify-center z-[60]">
+        <div class="w-[420px] bg-vibe-surface border border-vibe-border rounded-2xl p-6 shadow-2xl">
+            <div class="flex items-center justify-between">
+                <h3 class="text-lg font-semibold">PDF 壓縮設定</h3>
+                <button onclick="closeCompressModal()" class="text-gray-400 hover:text-white">
+                    <i class="ph ph-x text-xl"></i>
+                </button>
+            </div>
+
+            <p class="text-sm text-gray-400 mt-3">
+                會將頁面光柵化以降低檔案大小，文字會變成圖片。
+            </p>
+
+            <div class="mt-5 space-y-4">
+                <div>
+                    <label class="text-sm text-gray-300">壓縮模式</label>
+                    <select id="compress-mode"
+                        class="mt-2 w-full bg-vibe-bg border border-vibe-border rounded-lg px-3 py-2 text-sm">
+                        <option value="lossless">無損 / 結構壓縮（保留文字向量）</option>
+                        <option value="raster">高壓縮 / 光柵化（畫質取決於參數）</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="text-sm text-gray-300">解析度比例</label>
+                    <div class="flex items-center gap-3 mt-2">
+                        <input id="compress-scale" type="range" min="0.5" max="1" step="0.05" value="0.8"
+                            class="w-full">
+                        <span id="compress-scale-value" class="text-sm text-gray-300 w-12 text-right">0.80</span>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="text-sm text-gray-300">JPEG 品質</label>
+                    <div class="flex items-center gap-3 mt-2">
+                        <input id="compress-quality" type="range" min="0.5" max="0.95" step="0.05" value="0.8"
+                            class="w-full">
+                        <span id="compress-quality-value" class="text-sm text-gray-300 w-12 text-right">0.80</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-6 flex items-center justify-end gap-3">
+                <button onclick="closeCompressModal()"
+                    class="px-4 py-2 rounded-lg border border-vibe-border text-sm hover:bg-gray-700 transition-colors">
+                    取消
+                </button>
+                <button id="compress-action" onclick="compressPdf()"
+                    class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium">
+                    開始壓縮
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // --- 狀態管理 ---
         const state = {
@@ -287,7 +350,14 @@
             pageCount: document.getElementById('page-count'),
             toolBtns: document.querySelectorAll('.tool-btn'),
             pageList: document.getElementById('page-list'),
-            imageInsert: document.getElementById('image-insert')
+            imageInsert: document.getElementById('image-insert'),
+            compressModal: document.getElementById('compress-modal'),
+            compressMode: document.getElementById('compress-mode'),
+            compressScale: document.getElementById('compress-scale'),
+            compressQuality: document.getElementById('compress-quality'),
+            compressScaleValue: document.getElementById('compress-scale-value'),
+            compressQualityValue: document.getElementById('compress-quality-value'),
+            compressAction: document.getElementById('compress-action')
         };
 
         const ctx = els.pdfCanvas.getContext('2d');
@@ -295,6 +365,19 @@
 
         // --- 初始化 ---
         els.fileInput.addEventListener('change', handleFileSelect);
+        els.compressScale.addEventListener('input', () => {
+            els.compressScaleValue.textContent = Number(els.compressScale.value).toFixed(2);
+        });
+        els.compressQuality.addEventListener('input', () => {
+            els.compressQualityValue.textContent = Number(els.compressQuality.value).toFixed(2);
+        });
+        els.compressMode.addEventListener('change', () => {
+            const isRaster = els.compressMode.value === 'raster';
+            els.compressScale.disabled = !isRaster;
+            els.compressQuality.disabled = !isRaster;
+            els.compressScaleValue.style.opacity = isRaster ? '1' : '0.5';
+            els.compressQualityValue.style.opacity = isRaster ? '1' : '0.5';
+        });
 
         const mainScroll = document.getElementById('main-scroll');
 
@@ -788,6 +871,120 @@
                 const newPageNum = Math.min(pageIndex + 1, state.pdfDoc.getPageCount());
                 await rebuildPdfJsDoc(newPageNum);
                 await buildPageList();
+            }
+        }
+
+        // --- 壓縮功能 ---
+        function openCompressModal() {
+            if (!state.pdfDoc) return;
+            els.compressModal.classList.remove('hidden');
+            els.compressModal.classList.add('flex');
+            const isRaster = els.compressMode.value === 'raster';
+            els.compressScale.disabled = !isRaster;
+            els.compressQuality.disabled = !isRaster;
+        }
+
+        function closeCompressModal() {
+            els.compressModal.classList.add('hidden');
+            els.compressModal.classList.remove('flex');
+        }
+
+        async function buildEditedPdfBytes() {
+            const baseBytes = await state.pdfDoc.save();
+            const tempDoc = await PDFLib.PDFDocument.load(baseBytes);
+            const pages = tempDoc.getPages();
+
+            for (let i = 0; i < pages.length; i++) {
+                const page = pages[i];
+                const { width, height } = page.getSize();
+
+                const annos = state.annotations[i] || [];
+                for (const anno of annos) {
+                    const pdfX = anno.x / state.scale;
+                    const pdfY = height - (anno.y / state.scale) - 12;
+                    page.drawText(anno.content, {
+                        x: pdfX,
+                        y: pdfY,
+                        size: 16 / state.scale * 1.5,
+                        color: PDFLib.rgb(0, 0, 0),
+                    });
+                }
+
+                const drawingDataUrl = state.drawings[i];
+                if (drawingDataUrl) {
+                    const pngImage = await tempDoc.embedPng(drawingDataUrl);
+                    page.drawImage(pngImage, {
+                        x: 0,
+                        y: 0,
+                        width: width,
+                        height: height,
+                    });
+                }
+            }
+
+            return await tempDoc.save();
+        }
+
+        async function compressPdf() {
+            if (!state.pdfDoc) return;
+
+            const mode = els.compressMode.value;
+            const scale = Number(els.compressScale.value);
+            const quality = Number(els.compressQuality.value);
+
+            els.compressAction.disabled = true;
+            els.compressAction.textContent = '壓縮中...';
+
+            try {
+                const editedBytes = await buildEditedPdfBytes();
+
+                let compressedBytes;
+
+                if (mode === 'lossless') {
+                    const losslessDoc = await PDFLib.PDFDocument.load(editedBytes);
+                    compressedBytes = await losslessDoc.save({ useObjectStreams: true });
+                } else {
+                    const pdfJsDoc = await pdfjsLib.getDocument({ data: editedBytes }).promise;
+                    const compressedDoc = await PDFLib.PDFDocument.create();
+
+                    for (let i = 1; i <= pdfJsDoc.numPages; i++) {
+                        const page = await pdfJsDoc.getPage(i);
+                        const viewport = page.getViewport({ scale });
+
+                        const canvas = document.createElement('canvas');
+                        const context = canvas.getContext('2d');
+                        canvas.width = Math.floor(viewport.width);
+                        canvas.height = Math.floor(viewport.height);
+
+                        await page.render({ canvasContext: context, viewport }).promise;
+
+                        const jpegDataUrl = canvas.toDataURL('image/jpeg', quality);
+                        const jpegImage = await compressedDoc.embedJpg(jpegDataUrl);
+                        const compressedPage = compressedDoc.addPage([viewport.width, viewport.height]);
+                        compressedPage.drawImage(jpegImage, {
+                            x: 0,
+                            y: 0,
+                            width: viewport.width,
+                            height: viewport.height
+                        });
+                    }
+
+                    compressedBytes = await compressedDoc.save({ useObjectStreams: true });
+                }
+
+                const blob = new Blob([compressedBytes], { type: 'application/pdf' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = 'vibe-compressed.pdf';
+                link.click();
+
+                closeCompressModal();
+            } catch (error) {
+                console.error(error);
+                alert('壓縮失敗，請稍後再試');
+            } finally {
+                els.compressAction.disabled = false;
+                els.compressAction.textContent = '開始壓縮';
             }
         }
 
