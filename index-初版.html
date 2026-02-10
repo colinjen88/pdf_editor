@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vibe PDF Editor</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- PDF Libs -->
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+    <script>
+        // 設定 PDF.js Worker
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        vibe: {
+                            bg: '#0F1117',
+                            surface: '#1E212B',
+                            accent: '#6366F1',
+                            text: '#E2E8F0',
+                            border: '#2D3748'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #0F1117;
+            color: #E2E8F0;
+            overflow: hidden;
+        }
+
+        /* 自定義捲軸 */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #1E212B;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #4A5568;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #718096;
+        }
+
+        .canvas-container {
+            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        .tool-btn {
+            @apply p-3 rounded-2xl text-gray-300 hover:text-white hover:bg-vibe-surface transition-all duration-200 flex flex-col items-center gap-1.5 text-sm;
+        }
+
+        .tool-btn.active {
+            @apply bg-indigo-600/20 text-indigo-400 border border-indigo-500/30;
+        }
+
+        /* 拖曳中的文字 */
+        .draggable-text {
+            position: absolute;
+            cursor: move;
+            border: 1px dashed transparent;
+            padding: 2px 6px;
+            background: rgba(0, 0, 0, 0.1);
+            color: black;
+            /* 預設為黑色，因為 PDF 背景通常是白色 */
+            font-family: Helvetica, sans-serif;
+            font-size: 16px;
+            min-width: 50px;
+            outline: none;
+            border-radius: 4px;
+        }
+
+        .draggable-text:focus {
+            border-color: #6366F1;
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        /* 繪圖層 */
+        #drawing-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 10;
+            pointer-events: none;
+            /* 預設不攔截事件，除非在繪圖模式 */
+        }
+
+        #drawing-layer.drawing-mode {
+            pointer-events: auto;
+            cursor: crosshair;
+        }
+
+        .page-indicator {
+            font-feature-settings: "tnum";
+            font-variant-numeric: tabular-nums;
+        }
+
+        .page-item {
+            border: 1px solid transparent;
+        }
+
+        .page-item.active {
+            border-color: #6366F1;
+            box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.35);
+        }
+
+        .page-item.drag-over {
+            border-color: #818CF8;
+            background: rgba(99, 102, 241, 0.08);
+        }
+    </style>
+</head>
+
+<body class="flex flex-col h-screen">
+
+    <!-- 頂部導航欄 -->
+    <header
+        class="h-16 border-b border-vibe-border bg-vibe-bg/95 backdrop-blur flex items-center justify-between px-6 z-50">
+        <div class="flex items-center gap-3">
+            <div
+                class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold">
+                V
+            </div>
+            <h1 class="font-semibold text-lg tracking-tight">Vibe PDF</h1>
+        </div>
+
+        <!-- 檔案操作 -->
+        <div class="flex items-center gap-4">
+            <label
+                class="cursor-pointer bg-vibe-surface hover:bg-gray-700 text-sm px-4 py-2 rounded-lg border border-vibe-border transition-colors flex items-center gap-2">
+                <i class="ph ph-upload-simple text-lg"></i>
+                <span>開啟 PDF</span>
+                <input type="file" id="file-upload" accept="application/pdf" class="hidden">
+            </label>
+
+            <button onclick="openCompressModal()"
+                class="bg-vibe-surface hover:bg-gray-700 text-sm px-4 py-2 rounded-lg border border-vibe-border transition-colors flex items-center gap-2">
+                <i class="ph ph-arrows-in text-lg"></i>
+                <span>壓縮 PDF</span>
+            </button>
+
+            <button onclick="downloadPdf()"
+                class="bg-indigo-600 hover:bg-indigo-500 text-white text-sm px-4 py-2 rounded-lg shadow-lg shadow-indigo-500/20 transition-all flex items-center gap-2 font-medium">
+                <i class="ph ph-download-simple text-lg"></i>
+                <span>匯出檔案</span>
+            </button>
+        </div>
+    </header>
+
+    <div class="flex flex-1 overflow-hidden">
+        <!-- 左側工具欄 -->
+        <aside class="w-24 bg-vibe-bg border-r border-vibe-border flex flex-col items-center py-6 gap-3 z-40">
+            <button class="tool-btn active" id="tool-cursor" onclick="setTool('cursor')">
+                <i class="ph ph-cursor text-3xl"></i>
+                <span>選取</span>
+            </button>
+            <button class="tool-btn" id="tool-text" onclick="setTool('text')">
+                <i class="ph ph-text-t text-3xl"></i>
+                <span>文字</span>
+            </button>
+            <button class="tool-btn" id="tool-draw" onclick="setTool('draw')">
+                <i class="ph ph-pencil-simple text-3xl"></i>
+                <span>繪圖</span>
+            </button>
+
+            <div class="w-10 h-[1px] bg-vibe-border my-2"></div>
+
+            <button class="tool-btn" onclick="rotatePage()">
+                <i class="ph ph-arrows-clockwise text-3xl"></i>
+                <span>旋轉</span>
+            </button>
+            <button class="tool-btn hover:text-red-400" onclick="deletePage()">
+                <i class="ph ph-trash text-3xl"></i>
+                <span>刪除</span>
+            </button>
+        </aside>
+
+        <!-- 主要工作區 -->
+        <main class="flex-1 bg-[#0c0e12] relative overflow-auto flex justify-center p-8" id="main-scroll">
+
+            <!-- 未加載狀態 -->
+            <div id="empty-state" class="absolute inset-0 flex flex-col items-center justify-center text-gray-500">
+                <i class="ph ph-files text-6xl mb-4 opacity-50"></i>
+                <p class="text-lg">拖放 PDF 到這裡，或點擊左上角開啟</p>
+            </div>
+
+            <!-- PDF 渲染容器 -->
+            <div id="pdf-wrapper" class="relative hidden">
+                <canvas id="pdf-render" class="block rounded shadow-2xl"></canvas>
+                <!-- 繪圖畫布 (覆蓋在 PDF 上) -->
+                <canvas id="drawing-layer"></canvas>
+                <!-- 文字輸入層 -->
+                <div id="text-layer" class="absolute inset-0 z-20 pointer-events-none"></div>
+            </div>
+
+        </main>
+
+        <!-- 右側頁面目錄 -->
+        <aside class="w-72 bg-vibe-bg border-l border-vibe-border flex flex-col">
+            <div class="p-4 border-b border-vibe-border">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-base font-semibold text-gray-200">頁面目錄</h2>
+                    <div class="flex items-center gap-2">
+                        <button onclick="insertBlankPage()"
+                            class="text-sm px-3 py-1.5 rounded-md bg-vibe-surface border border-vibe-border hover:bg-gray-700 transition-colors">
+                            新增頁
+                        </button>
+                        <button onclick="triggerImageInsert()"
+                            class="text-sm px-3 py-1.5 rounded-md bg-vibe-surface border border-vibe-border hover:bg-gray-700 transition-colors">
+                            插入圖片
+                        </button>
+                    </div>
+                </div>
+                <p class="text-sm text-gray-400 mt-2">拖曳可重新排序</p>
+            </div>
+            <input type="file" id="image-insert" accept="image/png,image/jpeg" class="hidden" />
+            <div id="page-list" class="flex-1 overflow-auto p-4 space-y-4"></div>
+        </aside>
+    </div>
+
+    <!-- 底部頁面控制 -->
+    <footer class="h-14 border-t border-vibe-border bg-vibe-bg flex items-center justify-center gap-6 z-50">
+        <button onclick="changePage(-1)"
+            class="p-2 hover:bg-vibe-surface rounded-full transition-colors disabled:opacity-30" id="prev-page">
+            <i class="ph ph-caret-left text-xl"></i>
+        </button>
+
+        <span
+            class="text-sm font-medium bg-vibe-surface px-4 py-1.5 rounded-full border border-vibe-border page-indicator">
+            <span id="page-num">0</span> / <span id="page-count">0</span>
+        </span>
+
+        <button onclick="changePage(1)"
+            class="p-2 hover:bg-vibe-surface rounded-full transition-colors disabled:opacity-30" id="next-page">
+            <i class="ph ph-caret-right text-xl"></i>
+        </button>
+    </footer>
+
+    <!-- 壓縮設定視窗 -->
+    <div id="compress-modal"
+        class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden items-center justify-center z-[60]">
+        <div class="w-[420px] bg-vibe-surface border border-vibe-border rounded-2xl p-6 shadow-2xl">
+            <div class="flex items-center justify-between">
+                <h3 class="text-lg font-semibold">PDF 壓縮設定</h3>
+                <button onclick="closeCompressModal()" class="text-gray-400 hover:text-white">
+                    <i class="ph ph-x text-xl"></i>
+                </button>
+            </div>
+
+            <p class="text-sm text-gray-400 mt-3">
+                會將頁面光柵化以降低檔案大小，文字會變成圖片。
+            </p>
+
+            <div class="mt-5 space-y-4">
+                <div>
+                    <label class="text-sm text-gray-300">壓縮模式</label>
+                    <select id="compress-mode"
+                        class="mt-2 w-full bg-vibe-bg border border-vibe-border rounded-lg px-3 py-2 text-sm">
+                        <option value="lossless">無損 / 結構壓縮（保留文字向量）</option>
+                        <option value="raster">高壓縮 / 光柵化（畫質取決於參數）</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="text-sm text-gray-300">解析度比例</label>
+                    <div class="flex items-center gap-3 mt-2">
+                        <input id="compress-scale" type="range" min="0.5" max="1" step="0.05" value="0.8"
+                            class="w-full">
+                        <span id="compress-scale-value" class="text-sm text-gray-300 w-12 text-right">0.80</span>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="text-sm text-gray-300">JPEG 品質</label>
+                    <div class="flex items-center gap-3 mt-2">
+                        <input id="compress-quality" type="range" min="0.5" max="0.95" step="0.05" value="0.8"
+                            class="w-full">
+                        <span id="compress-quality-value" class="text-sm text-gray-300 w-12 text-right">0.80</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-6 flex items-center justify-end gap-3">
+                <button onclick="closeCompressModal()"
+                    class="px-4 py-2 rounded-lg border border-vibe-border text-sm hover:bg-gray-700 transition-colors">
+                    取消
+                </button>
+                <button id="compress-action" onclick="compressPdf()"
+                    class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium">
+                    開始壓縮
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- 狀態管理 ---
+        const state = {
+            pdfDoc: null,           // PDFLib 文檔 (用於編輯)
+            pdfBytes: null,         // 原始二進位資料
+            pdfJsDoc: null,         // PDF.js 文檔 (用於顯示)
+            pageNum: 1,
+            scale: 1.5,             // 渲染縮放比例 (高解析度)
+            tool: 'cursor',         // 當前工具: cursor, text, draw
+            pagesDetails: [],       // 記錄每頁的旋轉角度等資訊
+            annotations: [],        // [ [ { x, y, content } ] ]
+            drawings: [],           // [ imageDataUrl | null ]
+            isDrawing: false,
+            lastX: 0,
+            lastY: 0
+        };
+
+        // --- DOM 元素 ---
+        const els = {
+            fileInput: document.getElementById('file-upload'),
+            pdfWrapper: document.getElementById('pdf-wrapper'),
+            pdfCanvas: document.getElementById('pdf-render'),
+            drawCanvas: document.getElementById('drawing-layer'),
+            textLayer: document.getElementById('text-layer'),
+            emptyState: document.getElementById('empty-state'),
+            pageNum: document.getElementById('page-num'),
+            pageCount: document.getElementById('page-count'),
+            toolBtns: document.querySelectorAll('.tool-btn'),
+            pageList: document.getElementById('page-list'),
+            imageInsert: document.getElementById('image-insert'),
+            compressModal: document.getElementById('compress-modal'),
+            compressMode: document.getElementById('compress-mode'),
+            compressScale: document.getElementById('compress-scale'),
+            compressQuality: document.getElementById('compress-quality'),
+            compressScaleValue: document.getElementById('compress-scale-value'),
+            compressQualityValue: document.getElementById('compress-quality-value'),
+            compressAction: document.getElementById('compress-action')
+        };
+
+        const ctx = els.pdfCanvas.getContext('2d');
+        const drawCtx = els.drawCanvas.getContext('2d');
+
+        // --- 初始化 ---
+        els.fileInput.addEventListener('change', handleFileSelect);
+        els.compressScale.addEventListener('input', () => {
+            els.compressScaleValue.textContent = Number(els.compressScale.value).toFixed(2);
+        });
+        els.compressQuality.addEventListener('input', () => {
+            els.compressQualityValue.textContent = Number(els.compressQuality.value).toFixed(2);
+        });
+        els.compressMode.addEventListener('change', () => {
+            const isRaster = els.compressMode.value === 'raster';
+            els.compressScale.disabled = !isRaster;
+            els.compressQuality.disabled = !isRaster;
+            els.compressScaleValue.style.opacity = isRaster ? '1' : '0.5';
+            els.compressQualityValue.style.opacity = isRaster ? '1' : '0.5';
+        });
+
+        const mainScroll = document.getElementById('main-scroll');
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            mainScroll.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+            });
+            document.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+            });
+        });
+
+        mainScroll.addEventListener('dragover', () => {
+            mainScroll.classList.add('ring-2', 'ring-indigo-500/60');
+        });
+
+        mainScroll.addEventListener('dragleave', () => {
+            mainScroll.classList.remove('ring-2', 'ring-indigo-500/60');
+        });
+
+        mainScroll.addEventListener('drop', async (e) => {
+            mainScroll.classList.remove('ring-2', 'ring-indigo-500/60');
+            const file = e.dataTransfer.files && e.dataTransfer.files[0];
+            if (!file || file.type !== 'application/pdf') {
+                alert('請拖放 PDF 檔案');
+                return;
+            }
+            await handleFileBuffer(file);
+        });
+
+        document.addEventListener('drop', async (e) => {
+            const file = e.dataTransfer.files && e.dataTransfer.files[0];
+            if (!file) return;
+            if (file.type !== 'application/pdf') {
+                alert('請拖放 PDF 檔案');
+                return;
+            }
+            await handleFileBuffer(file);
+        });
+
+        // --- 工具切換邏輯 ---
+        function setTool(toolName) {
+            state.tool = toolName;
+
+            // UI 更新
+            els.toolBtns.forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.id === `tool-${toolName}`) btn.classList.add('active');
+            });
+
+            // 畫布互動模式設定
+            if (toolName === 'draw') {
+                els.drawCanvas.classList.add('drawing-mode');
+                els.textLayer.style.pointerEvents = 'none'; // 繪圖時文字不可點
+            } else if (toolName === 'text') {
+                els.drawCanvas.classList.remove('drawing-mode');
+                els.textLayer.style.pointerEvents = 'auto'; // 允許點擊文字層(新增)
+            } else {
+                els.drawCanvas.classList.remove('drawing-mode');
+                els.textLayer.style.pointerEvents = 'auto'; // 允許拖曳文字
+            }
+        }
+
+        // --- 檔案處理 ---
+        async function handleFileSelect(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            await handleFileBuffer(file);
+        }
+
+        async function handleFileBuffer(file) {
+            const arrayBuffer = await file.arrayBuffer();
+            state.pdfBytes = arrayBuffer;
+
+            // 載入 PDF-Lib (用於後續編輯)
+            state.pdfDoc = await PDFLib.PDFDocument.load(arrayBuffer);
+
+            // 載入 PDF.js (用於渲染)
+            state.pdfJsDoc = await pdfjsLib.getDocument(arrayBuffer).promise;
+
+            // 初始化狀態
+            state.pageNum = 1;
+            state.pagesDetails = new Array(state.pdfJsDoc.numPages).fill({ rotation: 0 });
+            state.annotations = Array.from({ length: state.pdfJsDoc.numPages }, () => []);
+            state.drawings = Array.from({ length: state.pdfJsDoc.numPages }, () => null);
+
+            els.pageCount.textContent = state.pdfJsDoc.numPages;
+            els.emptyState.classList.add('hidden');
+            els.pdfWrapper.classList.remove('hidden');
+
+            renderPage(state.pageNum);
+            buildPageList();
+        }
+
+        // --- 渲染核心 ---
+        async function renderPage(num) {
+            if (!state.pdfJsDoc) return;
+
+            // 保存當前頁面的繪圖狀態 (如果有的話)
+            // 注意：這裡簡化了，實際應用應該在切換頁面時自動保存 canvas 內容到 state
+
+            state.pageNum = num;
+            els.pageNum.textContent = num;
+
+            // 取得頁面
+            const page = await state.pdfJsDoc.getPage(num);
+
+            // 計算 Viewport
+            // 我們需要考慮 PDF-Lib 的旋轉狀態
+            // 但為簡化展示，我們假設 PDF.js 讀取時就是正確的，只處理我們自己添加的旋轉
+            // 這裡暫時只處理基本的顯示
+            const viewport = page.getViewport({ scale: state.scale });
+
+            // 設定 Canvas 大小
+            els.pdfCanvas.height = viewport.height;
+            els.pdfCanvas.width = viewport.width;
+            els.drawCanvas.height = viewport.height;
+            els.drawCanvas.width = viewport.width;
+
+            // 渲染 PDF
+            await page.render({
+                canvasContext: ctx,
+                viewport: viewport
+            }).promise;
+
+            // 重繪已保存的筆跡
+            drawCtx.clearRect(0, 0, els.drawCanvas.width, els.drawCanvas.height);
+            if (state.drawings[num - 1]) {
+                const img = new Image();
+                img.onload = () => drawCtx.drawImage(img, 0, 0);
+                img.src = state.drawings[num - 1];
+            }
+
+            // 重建文字標註
+            renderAnnotations(num);
+            updateActivePageInList();
+        }
+
+        function renderAnnotations(pageNum) {
+            els.textLayer.innerHTML = ''; // 清空
+            if (!state.annotations[pageNum - 1]) state.annotations[pageNum - 1] = [];
+
+            state.annotations[pageNum - 1].forEach((anno, index) => {
+                createTextInput(anno.x, anno.y, anno.content, index, false);
+            });
+        }
+
+        // --- 文字功能 ---
+        // 點擊 Text Layer 新增文字
+        els.textLayer.addEventListener('click', (e) => {
+            if (state.tool !== 'text') return;
+            if (e.target !== els.textLayer) return; // 避免點擊到現有文字框時觸發
+
+            const rect = els.textLayer.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            addAnnotation(state.pageNum, x, y, "輸入文字...");
+            setTool('cursor'); // 新增完切回游標
+        });
+
+        function addAnnotation(pageNum, x, y, content) {
+            if (!state.annotations[pageNum - 1]) state.annotations[pageNum - 1] = [];
+
+            // 儲存邏輯座標
+            state.annotations[pageNum - 1].push({ x, y, content });
+
+            // 建立 UI
+            createTextInput(x, y, content, state.annotations[pageNum - 1].length - 1, true);
+        }
+
+        function createTextInput(x, y, content, index, focus = false) {
+            const input = document.createElement('div');
+            input.contentEditable = true;
+            input.className = 'draggable-text pointer-events-auto';
+            input.style.left = `${x}px`;
+            input.style.top = `${y}px`;
+            input.innerText = content;
+
+            // 更新內容
+            input.addEventListener('input', (e) => {
+                if (state.annotations[state.pageNum - 1][index]) {
+                    state.annotations[state.pageNum - 1][index].content = input.innerText;
+                }
+            });
+
+            // 簡單的拖曳實作
+            let isDragging = false;
+            let startX, startY, initialLeft, initialTop;
+
+            input.addEventListener('mousedown', (e) => {
+                if (state.tool !== 'cursor') return;
+                isDragging = true;
+                startX = e.clientX;
+                startY = e.clientY;
+                initialLeft = parseInt(input.style.left || 0);
+                initialTop = parseInt(input.style.top || 0);
+                input.style.borderColor = '#6366F1';
+            });
+
+            window.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                const dx = e.clientX - startX;
+                const dy = e.clientY - startY;
+                const newX = initialLeft + dx;
+                const newY = initialTop + dy;
+
+                input.style.left = `${newX}px`;
+                input.style.top = `${newY}px`;
+
+                // 更新狀態
+                if (state.annotations[state.pageNum - 1][index]) {
+                    state.annotations[state.pageNum - 1][index].x = newX;
+                    state.annotations[state.pageNum - 1][index].y = newY;
+                }
+            });
+
+            window.addEventListener('mouseup', () => {
+                isDragging = false;
+                if (input) input.style.borderColor = 'transparent';
+            });
+
+            els.textLayer.appendChild(input);
+            if (focus) {
+                setTimeout(() => {
+                    input.focus();
+                    document.execCommand('selectAll', false, null);
+                }, 0);
+            }
+        }
+
+        // --- 繪圖功能 ---
+        drawCtx.lineWidth = 3;
+        drawCtx.lineJoin = 'round';
+        drawCtx.lineCap = 'round';
+        drawCtx.strokeStyle = '#ef4444'; // 紅筆
+
+        els.drawCanvas.addEventListener('mousedown', (e) => {
+            if (state.tool !== 'draw') return;
+            state.isDrawing = true;
+            [state.lastX, state.lastY] = [e.offsetX, e.offsetY];
+        });
+
+        els.drawCanvas.addEventListener('mousemove', (e) => {
+            if (!state.isDrawing || state.tool !== 'draw') return;
+            drawCtx.beginPath();
+            drawCtx.moveTo(state.lastX, state.lastY);
+            drawCtx.lineTo(e.offsetX, e.offsetY);
+            drawCtx.stroke();
+            [state.lastX, state.lastY] = [e.offsetX, e.offsetY];
+        });
+
+        const stopDrawing = () => {
+            if (state.isDrawing) {
+                state.isDrawing = false;
+                // 保存當前頁面的筆跡
+                state.drawings[state.pageNum - 1] = els.drawCanvas.toDataURL();
+            }
+        };
+        els.drawCanvas.addEventListener('mouseup', stopDrawing);
+        els.drawCanvas.addEventListener('mouseout', stopDrawing);
+
+        // --- 頁面控制 ---
+        async function changePage(offset) {
+            if (!state.pdfJsDoc) return;
+            const newNum = state.pageNum + offset;
+            if (newNum >= 1 && newNum <= state.pdfJsDoc.numPages) {
+                // 切換前先強制保存當前頁面的筆跡（防呆）
+                state.drawings[state.pageNum - 1] = els.drawCanvas.toDataURL();
+                await renderPage(newNum);
+            }
+        }
+
+        function getCurrentPageIndex() {
+            return state.pageNum - 1;
+        }
+
+        function arrayMove(arr, fromIndex, toIndex) {
+            const updated = [...arr];
+            const [item] = updated.splice(fromIndex, 1);
+            updated.splice(toIndex, 0, item);
+            return updated;
+        }
+
+        function computeNewIndex(currentIndex, fromIndex, toIndex) {
+            if (currentIndex === fromIndex) return toIndex;
+            if (fromIndex < toIndex && currentIndex > fromIndex && currentIndex <= toIndex) return currentIndex - 1;
+            if (fromIndex > toIndex && currentIndex >= toIndex && currentIndex < fromIndex) return currentIndex + 1;
+            return currentIndex;
+        }
+
+        async function rebuildPdfJsDoc(targetPageNum) {
+            const pdfBytes = await state.pdfDoc.save();
+            state.pdfBytes = pdfBytes;
+            state.pdfJsDoc = await pdfjsLib.getDocument(pdfBytes).promise;
+            els.pageCount.textContent = state.pdfJsDoc.numPages;
+            await renderPage(targetPageNum);
+        }
+
+        async function buildPageList() {
+            if (!state.pdfJsDoc) return;
+            els.pageList.innerHTML = '';
+
+            const total = state.pdfJsDoc.numPages;
+            for (let i = 0; i < total; i++) {
+                const pageNumber = i + 1;
+                const item = document.createElement('div');
+                item.className = 'page-item rounded-xl p-3 bg-vibe-surface border border-vibe-border hover:border-indigo-400/40 transition-colors';
+                item.dataset.index = i;
+                item.draggable = true;
+
+                const header = document.createElement('div');
+                header.className = 'flex items-center justify-between text-sm text-gray-300 mb-2';
+                header.innerHTML = `<span>第 ${pageNumber} 頁</span>`;
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'text-gray-400 hover:text-red-400';
+                deleteBtn.innerHTML = '<i class="ph ph-trash"></i>';
+                deleteBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    deletePageAt(i);
+                });
+                header.appendChild(deleteBtn);
+
+                const canvas = document.createElement('canvas');
+                canvas.className = 'w-full rounded-md shadow';
+
+                item.appendChild(header);
+                item.appendChild(canvas);
+
+                item.addEventListener('click', () => {
+                    renderPage(pageNumber);
+                });
+
+                item.addEventListener('dragstart', (e) => {
+                    item.classList.add('opacity-70');
+                    e.dataTransfer.effectAllowed = 'move';
+                    e.dataTransfer.setData('text/plain', String(i));
+                });
+
+                item.addEventListener('dragend', () => {
+                    item.classList.remove('opacity-70');
+                });
+
+                item.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    item.classList.add('drag-over');
+                });
+
+                item.addEventListener('dragleave', () => {
+                    item.classList.remove('drag-over');
+                });
+
+                item.addEventListener('drop', async (e) => {
+                    e.preventDefault();
+                    item.classList.remove('drag-over');
+                    const fromIndex = Number(e.dataTransfer.getData('text/plain'));
+                    const toIndex = Number(item.dataset.index);
+                    if (Number.isNaN(fromIndex) || fromIndex === toIndex) return;
+                    await reorderPages(fromIndex, toIndex);
+                });
+
+                els.pageList.appendChild(item);
+
+                const page = await state.pdfJsDoc.getPage(pageNumber);
+                const baseViewport = page.getViewport({ scale: 1 });
+                const scale = 180 / baseViewport.width;
+                const viewport = page.getViewport({ scale });
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+                const thumbCtx = canvas.getContext('2d');
+                await page.render({ canvasContext: thumbCtx, viewport }).promise;
+            }
+
+            updateActivePageInList();
+        }
+
+        function updateActivePageInList() {
+            const items = els.pageList.querySelectorAll('.page-item');
+            items.forEach((item) => {
+                const index = Number(item.dataset.index);
+                if (index === state.pageNum - 1) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+        }
+
+        async function reorderPages(fromIndex, toIndex) {
+            if (!state.pdfDoc) return;
+            const currentIndex = getCurrentPageIndex();
+            state.pdfDoc.movePage(fromIndex, toIndex);
+            state.annotations = arrayMove(state.annotations, fromIndex, toIndex);
+            state.drawings = arrayMove(state.drawings, fromIndex, toIndex);
+            const newIndex = computeNewIndex(currentIndex, fromIndex, toIndex);
+            await rebuildPdfJsDoc(newIndex + 1);
+            await buildPageList();
+        }
+
+        async function insertBlankPage() {
+            if (!state.pdfDoc) return;
+            const currentIndex = getCurrentPageIndex();
+            const currentPage = state.pdfDoc.getPages()[currentIndex];
+            const size = currentPage ? currentPage.getSize() : { width: 595.28, height: 841.89 };
+            const insertIndex = currentIndex + 1;
+            state.pdfDoc.insertPage(insertIndex, [size.width, size.height]);
+            state.annotations.splice(insertIndex, 0, []);
+            state.drawings.splice(insertIndex, 0, null);
+            await rebuildPdfJsDoc(insertIndex + 1);
+            await buildPageList();
+        }
+
+        function triggerImageInsert() {
+            if (!state.pdfDoc) return;
+            els.imageInsert.value = '';
+            els.imageInsert.click();
+        }
+
+        els.imageInsert.addEventListener('change', async (e) => {
+            const file = e.target.files && e.target.files[0];
+            if (!file) return;
+            if (!['image/png', 'image/jpeg'].includes(file.type)) {
+                alert('只支援 PNG 或 JPG');
+                return;
+            }
+            await insertImagePage(file);
+        });
+
+        async function insertImagePage(file) {
+            if (!state.pdfDoc) return;
+            const currentIndex = getCurrentPageIndex();
+            const insertIndex = currentIndex + 1;
+
+            const arrayBuffer = await file.arrayBuffer();
+            const image = file.type === 'image/png'
+                ? await state.pdfDoc.embedPng(arrayBuffer)
+                : await state.pdfDoc.embedJpg(arrayBuffer);
+
+            const imageWidth = image.width;
+            const imageHeight = image.height;
+            const page = state.pdfDoc.insertPage(insertIndex, [imageWidth, imageHeight]);
+            page.drawImage(image, {
+                x: 0,
+                y: 0,
+                width: imageWidth,
+                height: imageHeight
+            });
+
+            state.annotations.splice(insertIndex, 0, []);
+            state.drawings.splice(insertIndex, 0, null);
+
+            await rebuildPdfJsDoc(insertIndex + 1);
+            await buildPageList();
+        }
+
+        async function rotatePage() {
+            if (!state.pdfDoc) return;
+            const page = state.pdfDoc.getPages()[state.pageNum - 1];
+            const currentRotation = page.getRotation().angle;
+            page.setRotation(PDFLib.degrees(currentRotation + 90));
+
+            // 重新載入 PDF JS 顯示需要將修改後的 PDF 轉回 bytes
+            // 這裡為了效能，我們暫時不做即時的 PDF 重建，
+            // 因為那樣太慢。正規作法是用 CSS 旋轉 canvas，
+            // 但這裡我們簡單提示使用者「匯出後生效」或簡單轉一下 Canvas
+
+            els.pdfWrapper.style.transition = 'transform 0.3s';
+            // 這只是一個視覺 hack，實際編輯已經在 pdfDoc 完成
+            // 若要真實旋轉渲染，需要 save -> reload，這裡略過以保持流暢感
+            alert('頁面已旋轉 (匯出時生效)');
+        }
+
+        async function deletePage() {
+            if (!state.pdfDoc) return;
+            deletePageAt(getCurrentPageIndex());
+        }
+
+        async function deletePageAt(pageIndex) {
+            if (!state.pdfDoc) return;
+            if (state.pdfDoc.getPageCount() <= 1) {
+                alert('至少需要保留 1 頁');
+                return;
+            }
+            if (confirm('確定要刪除此頁嗎？')) {
+                state.pdfDoc.removePage(pageIndex);
+                state.annotations.splice(pageIndex, 1);
+                state.drawings.splice(pageIndex, 1);
+                const newPageNum = Math.min(pageIndex + 1, state.pdfDoc.getPageCount());
+                await rebuildPdfJsDoc(newPageNum);
+                await buildPageList();
+            }
+        }
+
+        // --- 壓縮功能 ---
+        function openCompressModal() {
+            if (!state.pdfDoc) return;
+            els.compressModal.classList.remove('hidden');
+            els.compressModal.classList.add('flex');
+            const isRaster = els.compressMode.value === 'raster';
+            els.compressScale.disabled = !isRaster;
+            els.compressQuality.disabled = !isRaster;
+        }
+
+        function closeCompressModal() {
+            els.compressModal.classList.add('hidden');
+            els.compressModal.classList.remove('flex');
+        }
+
+        async function buildEditedPdfBytes() {
+            const baseBytes = await state.pdfDoc.save();
+            const tempDoc = await PDFLib.PDFDocument.load(baseBytes);
+            const pages = tempDoc.getPages();
+
+            for (let i = 0; i < pages.length; i++) {
+                const page = pages[i];
+                const { width, height } = page.getSize();
+
+                const annos = state.annotations[i] || [];
+                for (const anno of annos) {
+                    const pdfX = anno.x / state.scale;
+                    const pdfY = height - (anno.y / state.scale) - 12;
+                    page.drawText(anno.content, {
+                        x: pdfX,
+                        y: pdfY,
+                        size: 16 / state.scale * 1.5,
+                        color: PDFLib.rgb(0, 0, 0),
+                    });
+                }
+
+                const drawingDataUrl = state.drawings[i];
+                if (drawingDataUrl) {
+                    const pngImage = await tempDoc.embedPng(drawingDataUrl);
+                    page.drawImage(pngImage, {
+                        x: 0,
+                        y: 0,
+                        width: width,
+                        height: height,
+                    });
+                }
+            }
+
+            return await tempDoc.save();
+        }
+
+        async function compressPdf() {
+            if (!state.pdfDoc) return;
+
+            const mode = els.compressMode.value;
+            const scale = Number(els.compressScale.value);
+            const quality = Number(els.compressQuality.value);
+
+            els.compressAction.disabled = true;
+            els.compressAction.textContent = '壓縮中...';
+
+            try {
+                const editedBytes = await buildEditedPdfBytes();
+
+                let compressedBytes;
+
+                if (mode === 'lossless') {
+                    const losslessDoc = await PDFLib.PDFDocument.load(editedBytes);
+                    compressedBytes = await losslessDoc.save({ useObjectStreams: true });
+                } else {
+                    const pdfJsDoc = await pdfjsLib.getDocument({ data: editedBytes }).promise;
+                    const compressedDoc = await PDFLib.PDFDocument.create();
+
+                    for (let i = 1; i <= pdfJsDoc.numPages; i++) {
+                        const page = await pdfJsDoc.getPage(i);
+                        const viewport = page.getViewport({ scale });
+
+                        const canvas = document.createElement('canvas');
+                        const context = canvas.getContext('2d');
+                        canvas.width = Math.floor(viewport.width);
+                        canvas.height = Math.floor(viewport.height);
+
+                        await page.render({ canvasContext: context, viewport }).promise;
+
+                        const jpegDataUrl = canvas.toDataURL('image/jpeg', quality);
+                        const jpegImage = await compressedDoc.embedJpg(jpegDataUrl);
+                        const compressedPage = compressedDoc.addPage([viewport.width, viewport.height]);
+                        compressedPage.drawImage(jpegImage, {
+                            x: 0,
+                            y: 0,
+                            width: viewport.width,
+                            height: viewport.height
+                        });
+                    }
+
+                    compressedBytes = await compressedDoc.save({ useObjectStreams: true });
+                }
+
+                const blob = new Blob([compressedBytes], { type: 'application/pdf' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = 'vibe-compressed.pdf';
+                link.click();
+
+                closeCompressModal();
+            } catch (error) {
+                console.error(error);
+                alert('壓縮失敗，請稍後再試');
+            } finally {
+                els.compressAction.disabled = false;
+                els.compressAction.textContent = '開始壓縮';
+            }
+        }
+
+        // --- 匯出功能 ---
+        async function downloadPdf() {
+            if (!state.pdfDoc) return;
+
+            // 1. 將所有的標註寫入 PDF
+            const pages = state.pdfDoc.getPages();
+
+            for (let i = 0; i < pages.length; i++) {
+                const pageNum = i + 1;
+                const page = pages[i];
+                const { width, height } = page.getSize();
+
+                // 處理文字
+                const annos = state.annotations[i] || [];
+                for (const anno of annos) {
+                    // 座標轉換：HTML Canvas (Top-Left 0,0) -> PDF (Bottom-Left 0,0)
+                    // 需要根據 scale 還原比例
+                    const pdfX = anno.x / state.scale;
+                    // PDF Y 軸是倒過來的，且需考慮字體大小的位移
+                    const pdfY = height - (anno.y / state.scale) - 12; // 12 是字體高度估算
+
+                    page.drawText(anno.content, {
+                        x: pdfX,
+                        y: pdfY,
+                        size: 16 / state.scale * 1.5, // 簡單的字體比例調整
+                        color: PDFLib.rgb(0, 0, 0),
+                    });
+                }
+
+                // 處理繪圖
+                const drawingDataUrl = state.drawings[i];
+                if (drawingDataUrl) {
+                    // 將 DataURL 轉為 PDFImage
+                    const pngImage = await state.pdfDoc.embedPng(drawingDataUrl);
+                    page.drawImage(pngImage, {
+                        x: 0,
+                        y: 0,
+                        width: width,
+                        height: height,
+                    });
+                }
+            }
+
+            const pdfBytes = await state.pdfDoc.save();
+            const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'vibe-edited.pdf';
+            link.click();
+        }
+
+    </script>
+</body>
+
+</html>
