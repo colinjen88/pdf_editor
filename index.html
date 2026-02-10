@@ -12,7 +12,8 @@
         }
     </style>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Vibe PDF Editor</title>
 
     <!-- Tailwind CSS -->
@@ -142,6 +143,366 @@
             border-color: #818CF8;
             background: rgba(99, 102, 241, 0.08);
         }
+
+        /* ===== Mobile Responsive (≤ 768px) ===== */
+        @media (max-width: 768px) {
+
+            /* --- Header --- */
+            header {
+                padding: env(safe-area-inset-top, 0) 8px 0 8px !important;
+                height: calc(48px + env(safe-area-inset-top, 0)) !important;
+                gap: 4px !important;
+            }
+
+            header h1 {
+                display: none !important;
+            }
+
+            /* --- Hide desktop-only elements --- */
+            #search-bar,
+            .fixed.top-20,
+            .header-center-controls,
+            .header-desktop-tools,
+            .header-desktop-settings,
+            .header-desktop-filter {
+                display: none !important;
+            }
+
+            .mobile-menu-btn {
+                display: flex !important;
+            }
+
+            /* Logo smaller on mobile */
+            header .w-9 {
+                width: 32px !important;
+                height: 32px !important;
+                font-size: 14px !important;
+            }
+
+            /* Export button compact */
+            header button[onclick="downloadPdf()"] {
+                padding: 6px 10px !important;
+                font-size: 12px !important;
+            }
+
+            /* --- Left Sidebar: hidden --- */
+            .desktop-sidebar-left {
+                display: none !important;
+            }
+
+            /* --- Right Sidebar: slide-in drawer --- */
+            .mobile-sidebar-right {
+                position: fixed !important;
+                top: 0 !important;
+                right: 0 !important;
+                bottom: 0 !important;
+                width: 78vw !important;
+                max-width: 300px !important;
+                padding-top: calc(48px + env(safe-area-inset-top, 0)) !important;
+                transform: translateX(100%);
+                transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+                z-index: 100 !important;
+                box-shadow: -4px 0 24px rgba(0, 0, 0, 0.5);
+                border-left: none !important;
+                overflow-y: auto !important;
+            }
+
+            .mobile-sidebar-right.open {
+                transform: translateX(0);
+            }
+
+            /* Sidebar header area - compact */
+            .mobile-sidebar-right>div:first-child {
+                padding: 10px 12px !important;
+            }
+
+            .mobile-sidebar-right>div:first-child>div:first-child {
+                margin-bottom: 8px !important;
+            }
+
+            .mobile-sidebar-right>div:first-child h2 {
+                font-size: 13px !important;
+            }
+
+            /* Sidebar buttons grid - compact layout */
+            .mobile-sidebar-right .grid {
+                gap: 6px !important;
+            }
+
+            .mobile-sidebar-right .grid button {
+                padding: 6px 8px !important;
+                font-size: 12px !important;
+                gap: 4px !important;
+                border-radius: 8px !important;
+            }
+
+            .mobile-sidebar-right .grid button i {
+                font-size: 14px !important;
+            }
+
+            /* Full-width buttons in sidebar */
+            .mobile-sidebar-right .grid .col-span-2 {
+                padding: 8px 10px !important;
+            }
+
+            /* Drag hint */
+            .mobile-sidebar-right .border-t {
+                margin-top: 8px !important;
+                padding-top: 6px !important;
+            }
+
+            /* Page list area */
+            .mobile-sidebar-right #page-list {
+                padding: 8px !important;
+                gap: 6px !important;
+            }
+
+            /* --- Sidebar Overlay --- */
+            .sidebar-overlay {
+                display: none;
+                position: fixed;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.5);
+                backdrop-filter: blur(3px);
+                -webkit-backdrop-filter: blur(3px);
+                z-index: 99;
+            }
+
+            .sidebar-overlay.active {
+                display: block;
+            }
+
+            /* --- Main Canvas --- */
+            #main-scroll {
+                padding: 8px 4px calc(68px + env(safe-area-inset-bottom, 0)) 4px !important;
+            }
+
+            #empty-state {
+                border-width: 2px !important;
+                border-radius: 12px !important;
+                margin: 4px !important;
+            }
+
+            #empty-state i {
+                font-size: 2.5rem !important;
+                margin-bottom: 8px !important;
+            }
+
+            #empty-state p {
+                font-size: 13px !important;
+                line-height: 1.4 !important;
+            }
+
+            /* --- Footer: hidden on mobile --- */
+            footer {
+                display: none !important;
+            }
+
+            /* --- Mobile Bottom Toolbar --- */
+            .mobile-toolbar {
+                display: flex !important;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                height: calc(56px + env(safe-area-inset-bottom, 0));
+                padding: 0 2px env(safe-area-inset-bottom, 0) 2px;
+                background: rgba(20, 22, 30, 0.97);
+                border-top: 1px solid rgba(255, 255, 255, 0.06);
+                z-index: 90;
+                align-items: center;
+                justify-content: space-evenly;
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
+            }
+
+            .mobile-toolbar button {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                gap: 1px;
+                min-width: 40px;
+                min-height: 44px;
+                padding: 4px 3px;
+                border-radius: 8px;
+                color: rgba(160, 174, 192, 0.7);
+                font-size: 9px;
+                font-weight: 500;
+                transition: all 0.15s ease;
+                border: none;
+                background: none;
+                -webkit-tap-highlight-color: transparent;
+                position: relative;
+            }
+
+            .mobile-toolbar button:active {
+                transform: scale(0.88);
+            }
+
+            .mobile-toolbar button.active {
+                color: #818CF8;
+                background: rgba(99, 102, 241, 0.12);
+            }
+
+            .mobile-toolbar button.active::after {
+                content: '';
+                position: absolute;
+                bottom: 1px;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 14px;
+                height: 2px;
+                border-radius: 1px;
+                background: #818CF8;
+            }
+
+            .mobile-toolbar button i {
+                font-size: 18px;
+                line-height: 1;
+            }
+
+            .mobile-toolbar .toolbar-divider {
+                width: 1px;
+                height: 24px;
+                background: rgba(255, 255, 255, 0.06);
+                flex-shrink: 0;
+            }
+
+            /* Page nav group */
+            .mobile-page-nav {
+                display: flex !important;
+                align-items: center;
+                gap: 0;
+            }
+
+            .mobile-page-nav button {
+                min-width: 32px;
+                padding: 4px 2px;
+                font-size: 0;
+            }
+
+            .mobile-page-nav button i {
+                font-size: 16px;
+            }
+
+            .mobile-page-nav>span {
+                font-size: 10px;
+                color: rgba(160, 174, 192, 0.7);
+                white-space: nowrap;
+                font-variant-numeric: tabular-nums;
+                line-height: 1;
+            }
+
+            /* --- Modals: bottom sheet --- */
+            .fixed.inset-0>div,
+            .modal-content {
+                width: 100vw !important;
+                max-width: 100vw !important;
+                min-width: auto !important;
+                max-height: 75vh;
+                overflow-y: auto;
+                border-radius: 16px 16px 0 0 !important;
+                position: fixed !important;
+                bottom: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                top: auto !important;
+                padding: 16px 14px calc(14px + env(safe-area-inset-bottom, 0)) 14px !important;
+                box-shadow: 0 -4px 30px rgba(0, 0, 0, 0.4);
+            }
+
+            .fixed.inset-0 {
+                align-items: flex-end !important;
+            }
+
+            /* --- Draw Toolbar --- */
+            #draw-toolbar {
+                top: calc(52px + env(safe-area-inset-top, 0)) !important;
+                left: 6px !important;
+                right: 6px !important;
+                padding: 6px 8px !important;
+                font-size: 11px;
+                border-radius: 10px !important;
+                gap: 6px !important;
+            }
+
+            #draw-toolbar label {
+                font-size: 11px;
+            }
+
+            #draw-toolbar input[type="color"] {
+                width: 28px !important;
+                height: 28px !important;
+            }
+
+            #draw-toolbar input[type="number"] {
+                width: 48px !important;
+                padding: 2px 4px !important;
+                font-size: 11px;
+            }
+
+            #draw-toolbar button {
+                font-size: 11px !important;
+                padding: 4px 8px !important;
+            }
+
+            /* PDF canvas */
+            #pdf-render {
+                border-radius: 8px !important;
+                border-width: 1px !important;
+            }
+        }
+
+        /* ===== Tablet (769px – 1024px) ===== */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            header {
+                padding-left: 16px !important;
+                padding-right: 16px !important;
+            }
+
+            .header-desktop-settings {
+                display: none !important;
+            }
+
+            .desktop-sidebar-left {
+                width: 64px !important;
+                padding-top: 16px !important;
+                padding-bottom: 16px !important;
+                gap: 6px !important;
+            }
+
+            .desktop-sidebar-left .tool-btn span {
+                font-size: 9px !important;
+            }
+
+            .desktop-sidebar-left .tool-btn i {
+                font-size: 22px !important;
+            }
+
+            .mobile-sidebar-right {
+                width: 260px !important;
+            }
+        }
+
+        /* ===== Desktop (> 768px): hide mobile-only elements ===== */
+        @media (min-width: 769px) {
+            .mobile-toolbar {
+                display: none !important;
+            }
+
+            .mobile-menu-btn {
+                display: none !important;
+            }
+
+            .sidebar-overlay {
+                display: none !important;
+            }
+
+            .mobile-page-nav {
+                display: none !important;
+            }
+        }
     </style>
 </head>
 
@@ -149,30 +510,31 @@
     <!-- Toast/Loading/主題切換區 -->
     <div id="ui-overlays" class="fixed inset-0 pointer-events-none z-[100]"></div>
     <!-- 搜尋工具欄 -->
-    <div class="fixed top-20 left-1/2 -translate-x-1/2 z-[101] flex items-center gap-2 bg-vibe-surface border border-vibe-border rounded-xl shadow-lg px-4 py-2"
-        style="min-width:320px">
+    <div id="search-bar"
+        class="hidden md:flex fixed top-20 left-1/2 -translate-x-1/2 z-[102] items-center gap-2 bg-vibe-surface border border-vibe-border rounded-xl shadow-lg px-4 py-2"
+        style="min-width:280px; max-width:90vw">
         <input id="search-input" type="text" placeholder="搜尋PDF文字..."
-            class="px-3 py-2 rounded border border-vibe-border bg-white text-black dark:bg-vibe-surface dark:text-vibe-text"
-            style="min-width:220px">
-        <button id="search-btn" class="px-3 py-2 rounded bg-indigo-500 text-white font-medium"><i
+            class="flex-1 min-w-0 px-3 py-2 rounded border border-vibe-border bg-white text-black dark:bg-vibe-surface dark:text-vibe-text"
+            style="min-width:0">
+        <button id="search-btn" class="px-3 py-2 rounded bg-indigo-500 text-white font-medium whitespace-nowrap"><i
                 class="ph ph-magnifying-glass"></i> 搜尋</button>
         <span id="search-count" class="text-sm text-gray-400"></span>
     </div>
 
     <!-- Header -->
     <header
-        class="h-16 border-b border-vibe-border bg-vibe-bg/95 backdrop-blur flex items-center justify-between px-8 shadow z-50">
+        class="h-14 md:h-16 border-b border-vibe-border bg-vibe-bg/95 backdrop-blur flex items-center justify-between px-3 md:px-8 shadow z-50 relative">
         <!-- Logo -->
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2 md:gap-3">
             <div
-                class="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-indigo-500/20">
+                class="w-8 h-8 md:w-9 md:h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-base md:text-lg shadow-lg shadow-indigo-500/20">
                 V</div>
-            <h1 class="font-semibold text-xl tracking-tight text-gray-100 hidden md:block" id="main-title">Vibe PDF</h1>
+            <h1 class="hidden md:block font-semibold text-xl tracking-tight text-gray-100" id="main-title">Vibe PDF</h1>
         </div>
 
-        <!-- Center Controls -->
+        <!-- Center Controls (desktop only) -->
         <div
-            class="absolute left-1/2 -translate-x-1/2 flex items-center gap-2 bg-vibe-surface/80 p-1.5 rounded-xl border border-vibe-border backdrop-blur-sm shadow-sm md:flex hidden">
+            class="header-center-controls absolute left-1/2 -translate-x-1/2 flex items-center gap-2 bg-vibe-surface/80 p-1.5 rounded-xl border border-vibe-border backdrop-blur-sm shadow-sm lg:flex hidden">
             <button onclick="undoAction()"
                 class="p-1.5 rounded-lg hover:bg-vibe-border hover:text-indigo-400 transition-colors text-vibe-text"
                 title="復原 (Undo)">
@@ -187,9 +549,9 @@
         </div>
 
         <!-- Right Toolbar -->
-        <div class="flex items-center gap-4">
-            <!-- Settings -->
-            <div class="flex items-center gap-3 mr-2 hidden lg:flex">
+        <div class="flex items-center gap-2">
+            <!-- Settings (desktop only) -->
+            <div class="header-desktop-settings flex items-center gap-3 mr-2 hidden lg:flex">
                 <select id="theme-select"
                     class="bg-transparent text-xs text-gray-500 hover:text-vibe-text transition-colors outline-none cursor-pointer"
                     onchange="setThemeColor(this.value)">
@@ -206,14 +568,27 @@
                 </select>
             </div>
 
-            <!-- Tools -->
-            <div class="flex items-center gap-1 bg-vibe-surface/50 p-1 rounded-lg border border-vibe-border/30">
-                <label
-                    class="cursor-pointer p-2 rounded-lg hover:bg-vibe-surface hover:text-indigo-400 text-gray-400 transition-all hover:scale-105 active:scale-95"
-                    title="開啟 PDF">
-                    <i class="ph ph-folder-open text-xl"></i>
-                    <input type="file" id="file-upload" accept="application/pdf" class="hidden">
-                </label>
+            <!-- Open PDF (always visible) -->
+            <label
+                class="cursor-pointer p-2 rounded-lg hover:bg-vibe-surface hover:text-indigo-400 text-gray-400 transition-all active:scale-95"
+                title="開啟 PDF">
+                <i class="ph ph-folder-open text-xl"></i>
+                <input type="file" id="file-upload" accept="application/pdf" class="hidden">
+            </label>
+
+            <!-- Desktop tools (hidden on mobile) -->
+            <div
+                class="header-desktop-tools flex items-center gap-1 bg-vibe-surface/50 p-1 rounded-lg border border-vibe-border/30">
+                <button onclick="undoAction()"
+                    class="lg:hidden p-2 rounded-lg hover:bg-vibe-surface hover:text-indigo-400 text-gray-400 transition-all"
+                    title="復原">
+                    <i class="ph ph-arrow-counter-clockwise text-xl"></i>
+                </button>
+                <button onclick="redoAction()"
+                    class="lg:hidden p-2 rounded-lg hover:bg-vibe-surface hover:text-indigo-400 text-gray-400 transition-all"
+                    title="重做">
+                    <i class="ph ph-arrow-clockwise text-xl"></i>
+                </button>
                 <button onclick="openCompressModal()"
                     class="p-2 rounded-lg hover:bg-vibe-surface hover:text-indigo-400 text-gray-400 transition-all hover:scale-105 active:scale-95"
                     title="壓縮 PDF">
@@ -236,35 +611,43 @@
                 </button>
             </div>
 
-            <div class="h-8 w-px bg-vibe-border mx-1"></div>
-
-            <div class="flex items-center gap-3">
+            <!-- Safe filter (desktop only) -->
+            <div class="header-desktop-filter flex items-center gap-3">
                 <label
                     class="flex items-center gap-2 text-xs text-gray-500 hover:text-vibe-text transition-colors cursor-pointer"
                     title="匯出時移除非標準物件">
                     <input type="checkbox" id="remove-nonstandard" class="accent-indigo-600 w-3.5 h-3.5">
                     <span class="hidden xl:inline">安全過濾</span>
                 </label>
-
-                <button onclick="downloadPdf()"
-                    class="group bg-indigo-600 hover:bg-indigo-500 text-white text-sm px-4 py-2 rounded-lg shadow-lg shadow-indigo-500/20 transition-all hover:scale-105 active:scale-95 flex items-center gap-2 font-medium">
-                    <i class="ph ph-download-simple text-lg group-hover:animate-bounce"></i>
-                    <span>匯出</span>
-                </button>
-                <button id="theme-toggle"
-                    class="ml-1 p-2 rounded-full border border-vibe-border bg-vibe-surface hover:bg-indigo-600/20 text-gray-400 hover:text-yellow-400 transition-colors text-lg shadow-sm"
-                    title="切換主題">
-                    <i class="ph ph-moon"></i>
-                </button>
             </div>
+
+            <!-- Export (always visible) -->
+            <button onclick="downloadPdf()"
+                class="group bg-indigo-600 hover:bg-indigo-500 text-white text-sm px-3 py-1.5 rounded-lg shadow-lg shadow-indigo-500/20 transition-all active:scale-95 flex items-center gap-1.5 font-medium">
+                <i class="ph ph-download-simple text-lg"></i>
+                <span class="hidden sm:inline">匯出</span>
+            </button>
+
+            <!-- Theme toggle -->
+            <button id="theme-toggle"
+                class="p-2 rounded-full border border-vibe-border bg-vibe-surface hover:bg-indigo-600/20 text-gray-400 hover:text-yellow-400 transition-colors text-lg shadow-sm"
+                title="切換主題">
+                <i class="ph ph-moon"></i>
+            </button>
+
+            <!-- Mobile sidebar toggle (mobile only) -->
+            <button
+                class="mobile-menu-btn hidden p-2 rounded-lg hover:bg-vibe-surface text-gray-400 hover:text-indigo-400 transition-colors"
+                onclick="toggleMobileSidebar()" title="頁面管理">
+                <i class="ph ph-list text-xl"></i>
+            </button>
         </div>
-
-
     </header>
 
     <div class="flex flex-1 overflow-hidden">
         <!-- 左側工具欄 -->
-        <aside class="w-24 bg-vibe-bg border-r border-vibe-border flex flex-col items-center py-8 gap-4 z-40">
+        <aside
+            class="desktop-sidebar-left w-24 bg-vibe-bg border-r border-vibe-border flex flex-col items-center py-8 gap-4 z-40">
             <button class="tool-btn active" id="tool-cursor" onclick="setTool('cursor')" title="選取">
                 <i class="ph ph-cursor text-3xl"></i>
                 <span class="mt-1">選取</span>
@@ -289,12 +672,15 @@
         </aside>
 
         <!-- 主要工作區 -->
-        <main class="flex-1 bg-[#10121a] relative overflow-auto flex justify-center items-center p-8" id="main-scroll">
+        <!-- 主要工作區 -->
+        <main
+            class="flex-1 bg-[#10121a] relative overflow-auto flex justify-center items-center p-2 md:p-8 pb-20 md:pb-8"
+            id="main-scroll">
             <!-- 未加載狀態 -->
             <div id="empty-state"
-                class="absolute inset-0 flex flex-col items-center justify-center text-gray-500 border-4 border-dashed border-indigo-500/30 rounded-2xl bg-vibe-surface/60 pointer-events-none select-none">
-                <i class="ph ph-files text-7xl mb-4 opacity-60"></i>
-                <p class="text-xl font-medium">拖放 PDF 到這裡<br>或點擊上方「開啟 PDF」</p>
+                class="absolute inset-0 flex flex-col items-center justify-center text-gray-500 border-2 md:border-4 border-dashed border-indigo-500/30 rounded-xl md:rounded-2xl bg-vibe-surface/60 pointer-events-none select-none p-4">
+                <i class="ph ph-files text-5xl md:text-7xl mb-2 md:mb-4 opacity-60"></i>
+                <p class="text-base md:text-xl font-medium text-center">拖放 PDF 到這裡<br>或點擊上方「開啟 PDF」</p>
             </div>
             <!-- PDF 渲染容器 -->
             <div id="pdf-wrapper" class="relative hidden flex flex-col items-center justify-center">
@@ -308,49 +694,58 @@
         </main>
 
         <!-- 右側頁面目錄 -->
-        <aside
-            class="w-80 bg-vibe-bg border-l border-vibe-border flex flex-col transition-all duration-300 shadow-xl z-20">
+        <!-- Sidebar Overlay (mobile) -->
+        <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleMobileSidebar()"></div>
+        <aside id="right-sidebar"
+            class="mobile-sidebar-right w-80 bg-vibe-bg border-l border-vibe-border flex flex-col transition-all duration-300 shadow-xl z-20">
             <div class="p-4 border-b border-vibe-border bg-vibe-surface/90 backdrop-blur-md sticky top-0 z-10">
-                <div class="flex items-center justify-between mb-4">
-                    <h2 class="text-base font-semibold text-gray-200 flex items-center gap-2">
+                <div class="flex items-center justify-between mb-3">
+                    <h2 class="text-sm font-semibold text-gray-200 flex items-center gap-2">
                         <i class="ph ph-list text-indigo-400"></i>
                         頁面管理
                     </h2>
-                    <span
-                        class="text-xs font-mono text-indigo-300 bg-indigo-500/10 border border-indigo-500/30 px-2 py-0.5 rounded-full"
-                        id="page-count-badge">0 頁</span>
+                    <div class="flex items-center gap-2">
+                        <span
+                            class="text-xs font-mono text-indigo-300 bg-indigo-500/10 border border-indigo-500/30 px-2 py-0.5 rounded-full"
+                            id="page-count-badge">0 頁</span>
+                        <button onclick="toggleMobileSidebar()"
+                            class="md:hidden p-1.5 rounded-lg hover:bg-vibe-border text-gray-400 hover:text-white transition-colors"
+                            title="關閉">
+                            <i class="ph ph-x text-base"></i>
+                        </button>
+                    </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-2">
                     <button onclick="insertSignatureField()"
-                        class="col-span-2 group flex items-center justify-center gap-2 text-sm px-3 py-2.5 rounded-lg bg-vibe-surface border border-vibe-border hover:border-indigo-500/50 hover:bg-indigo-500/10 text-vibe-text transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]">
+                        class="col-span-2 group flex items-center justify-center gap-2 text-xs md:text-sm px-2 md:px-3 py-2 md:py-2.5 rounded-lg bg-vibe-surface border border-vibe-border hover:border-indigo-500/50 hover:bg-indigo-500/10 text-vibe-text transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]">
                         <i class="ph ph-pen-nib text-indigo-400 group-hover:text-indigo-300 text-lg"></i>
                         <span>插入簽章欄位</span>
                     </button>
 
                     <button onclick="insertBlankPage()"
-                        class="group flex items-center justify-center gap-2 text-sm px-3 py-2 rounded-lg bg-vibe-surface border border-vibe-border hover:bg-indigo-500/10 hover:border-indigo-500/50 text-vibe-text transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+                        class="group flex items-center justify-center gap-2 text-xs md:text-sm px-2 md:px-3 py-2 rounded-lg bg-vibe-surface border border-vibe-border hover:bg-indigo-500/10 hover:border-indigo-500/50 text-vibe-text transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
                         title="新增空白頁">
                         <i class="ph ph-plus text-indigo-400 group-hover:text-white"></i> 新增頁
                     </button>
                     <button onclick="triggerImageInsert()"
-                        class="group flex items-center justify-center gap-2 text-sm px-3 py-2 rounded-lg bg-vibe-surface border border-vibe-border hover:bg-indigo-500/10 hover:border-indigo-500/50 text-vibe-text transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+                        class="group flex items-center justify-center gap-2 text-xs md:text-sm px-2 md:px-3 py-2 rounded-lg bg-vibe-surface border border-vibe-border hover:bg-indigo-500/10 hover:border-indigo-500/50 text-vibe-text transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
                         title="插入圖片頁面">
                         <i class="ph ph-image text-indigo-400 group-hover:text-white"></i> 插入圖
                     </button>
 
                     <button onclick="mergeSelectedPages()"
-                        class="group flex items-center justify-center gap-2 text-sm px-3 py-2 rounded-lg bg-vibe-surface border border-vibe-border hover:bg-indigo-500/10 hover:border-indigo-500/50 text-vibe-text transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+                        class="group flex items-center justify-center gap-2 text-xs md:text-sm px-2 md:px-3 py-2 rounded-lg bg-vibe-surface border border-vibe-border hover:bg-indigo-500/10 hover:border-indigo-500/50 text-vibe-text transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
                         title="合併選取頁面">
                         <i class="ph ph-arrows-merge text-indigo-400 group-hover:text-white"></i> 合併
                     </button>
                     <button onclick="splitPage()"
-                        class="group flex items-center justify-center gap-2 text-sm px-3 py-2 rounded-lg bg-vibe-surface border border-vibe-border hover:bg-indigo-500/10 hover:border-indigo-500/50 text-vibe-text transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+                        class="group flex items-center justify-center gap-2 text-xs md:text-sm px-2 md:px-3 py-2 rounded-lg bg-vibe-surface border border-vibe-border hover:bg-indigo-500/10 hover:border-indigo-500/50 text-vibe-text transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
                         title="分割目前頁面">
                         <i class="ph ph-arrows-split text-indigo-400 group-hover:text-white"></i> 分割
                     </button>
                     <button onclick="duplicatePage()"
-                        class="col-span-2 group flex items-center justify-center gap-2 text-sm px-3 py-2 rounded-lg bg-vibe-surface border border-vibe-border hover:bg-indigo-500/10 hover:border-indigo-500/50 text-vibe-text transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]">
+                        class="col-span-2 group flex items-center justify-center gap-2 text-xs md:text-sm px-2 md:px-3 py-2 rounded-lg bg-vibe-surface border border-vibe-border hover:bg-indigo-500/10 hover:border-indigo-500/50 text-vibe-text transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]">
                         <i class="ph ph-copy text-indigo-400 group-hover:text-white"></i> 複製目前頁面
                     </button>
                 </div>
@@ -365,6 +760,53 @@
                 class="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-thin scrollbar-thumb-vibe-border scrollbar-track-transparent">
             </div>
         </aside>
+    </div>
+
+    <!-- Mobile Bottom Toolbar -->
+    <div class="mobile-toolbar">
+        <!-- Page Navigation -->
+        <div class="mobile-page-nav">
+            <button onclick="changePage(-1)" title="上一頁">
+                <i class="ph ph-caret-left"></i>
+            </button>
+            <span><span id="m-page-num">0</span>/<span id="m-page-count">0</span></span>
+            <button onclick="changePage(1)" title="下一頁">
+                <i class="ph ph-caret-right"></i>
+            </button>
+        </div>
+        <div class="toolbar-divider"></div>
+        <!-- Tools -->
+        <button class="active" id="m-tool-cursor" onclick="setTool('cursor'); updateMobileToolbar('m-tool-cursor');">
+            <i class="ph ph-cursor"></i>
+            <span>選取</span>
+        </button>
+        <button id="m-tool-text" onclick="setTool('text'); updateMobileToolbar('m-tool-text');">
+            <i class="ph ph-text-t"></i>
+            <span>文字</span>
+        </button>
+        <button id="m-tool-draw" onclick="setTool('draw'); updateMobileToolbar('m-tool-draw');">
+            <i class="ph ph-pencil-simple"></i>
+            <span>繪圖</span>
+        </button>
+        <div class="toolbar-divider"></div>
+        <!-- Actions -->
+        <button onclick="rotatePage()">
+            <i class="ph ph-arrows-clockwise"></i>
+            <span>旋轉</span>
+        </button>
+        <button onclick="deletePage()" style="color:#F87171;">
+            <i class="ph ph-trash"></i>
+            <span>刪除</span>
+        </button>
+    </div>
+
+    <!-- Draw Toolbar (Moved from JS) -->
+    <div id="draw-toolbar"
+        class="hidden fixed top-36 left-1/2 -translate-x-1/2 z-[90] bg-vibe-surface border border-vibe-border rounded-xl shadow-lg px-4 py-2 flex items-center gap-3">
+        <label>筆色 <input type="color" id="draw-color" value="#ef4444" class="w-8 h-8 border rounded"></label>
+        <label>粗細 <input type="number" id="draw-width" min="1" max="20" value="3"
+                class="w-16 border rounded px-2 py-1"></label>
+        <button id="draw-eraser" class="px-3 py-1 rounded border border-vibe-border bg-gray-200 text-black">橡皮擦</button>
     </div>
 
     <!-- 底部頁面控制 -->
@@ -459,6 +901,52 @@
             history: [],            // 操作歷史堆疊
             historyIndex: -1        // 當前歷史指標
         };
+
+        // === Mobile Support Functions ===
+        function toggleMobileSidebar() {
+            const sidebar = document.getElementById('right-sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            if (!sidebar) return;
+            const isOpen = sidebar.classList.contains('open');
+            if (isOpen) {
+                sidebar.classList.remove('open');
+                overlay.classList.remove('active');
+            } else {
+                sidebar.classList.add('open');
+                overlay.classList.add('active');
+            }
+        }
+
+        function updateMobileToolbar(activeId) {
+            const toolbar = document.querySelector('.mobile-toolbar');
+            if (!toolbar) return;
+            toolbar.querySelectorAll('button[id]').forEach(btn => btn.classList.remove('active'));
+            const activeBtn = document.getElementById(activeId);
+            if (activeBtn) activeBtn.classList.add('active');
+        }
+
+        // Touch event support for drawing canvas
+        document.addEventListener('DOMContentLoaded', function () {
+            const drawingLayer = document.getElementById('drawing-layer');
+            if (!drawingLayer) return;
+
+            function touchToMouse(e, type) {
+                if (e.touches.length > 1) return; // ignore multi-touch
+                const touch = e.touches[0] || e.changedTouches[0];
+                const mouseEvent = new MouseEvent(type, {
+                    clientX: touch.clientX,
+                    clientY: touch.clientY,
+                    button: 0
+                });
+                drawingLayer.dispatchEvent(mouseEvent);
+                if (type !== 'mouseup') e.preventDefault();
+            }
+
+            drawingLayer.addEventListener('touchstart', function (e) { touchToMouse(e, 'mousedown'); }, { passive: false });
+            drawingLayer.addEventListener('touchmove', function (e) { touchToMouse(e, 'mousemove'); }, { passive: false });
+            drawingLayer.addEventListener('touchend', function (e) { touchToMouse(e, 'mouseup'); });
+        });
+        // === End Mobile Support ===
 
         function pushHistory() {
             // 深拷貝主要狀態
@@ -590,6 +1078,10 @@
                 btn.classList.remove('active');
                 if (btn.id === `tool-${toolName}`) btn.classList.add('active');
             });
+            // Sync mobile toolbar state
+            if (typeof updateMobileToolbar === 'function') {
+                updateMobileToolbar(`m-tool-${toolName}`);
+            }
 
             // 畫布互動模式設定
             if (toolName === 'draw') {
@@ -602,6 +1094,10 @@
                 els.drawCanvas.classList.remove('drawing-mode');
                 els.textLayer.style.pointerEvents = 'auto'; // 允許拖曳文字
             }
+
+            // Toggle Draw Toolbar
+            const dt = document.getElementById('draw-toolbar');
+            if (dt) dt.style.display = (toolName === 'draw') ? 'flex' : 'none';
         }
 
         // --- 檔案處理 ---
@@ -657,6 +1153,9 @@
             renderPdfFormFields(state.formFields);
 
             els.pageCount.textContent = state.pdfJsDoc.numPages;
+            // Sync mobile page count
+            const mc = document.getElementById('m-page-count');
+            if (mc) mc.textContent = state.pdfJsDoc.numPages;
             els.emptyState.classList.add('hidden');
             els.pdfWrapper.classList.remove('hidden');
 
@@ -837,20 +1336,15 @@
         }
 
         // --- 繪圖功能 ---
-        // --- 繪圖工具選單 ---
-        const drawToolbar = document.createElement('div');
-        drawToolbar.id = 'draw-toolbar';
-        drawToolbar.className = 'fixed top-36 left-1/2 -translate-x-1/2 z-[90] bg-vibe-surface border border-vibe-border rounded-xl shadow-lg px-4 py-2 flex items-center gap-3';
-        drawToolbar.innerHTML = `
-            <label>筆色 <input type="color" id="draw-color" value="#ef4444" class="w-8 h-8 border rounded"></label>
-            <label>粗細 <input type="number" id="draw-width" min="1" max="20" value="3" class="w-16 border rounded px-2 py-1"></label>
-            <button id="draw-eraser" class="px-3 py-1 rounded border border-vibe-border bg-gray-200 text-black">橡皮擦</button>
-        `;
-        document.body.appendChild(drawToolbar);
+        // --- 繪圖工具選單 (Initialized in HTML) ---
+        const drawToolbar = document.getElementById('draw-toolbar');
+
         let drawColor = '#ef4444', drawWidth = 3, drawEraser = false;
-        drawToolbar.querySelector('#draw-color').oninput = e => { drawColor = e.target.value; drawCtx.strokeStyle = drawColor; };
-        drawToolbar.querySelector('#draw-width').oninput = e => { drawWidth = parseInt(e.target.value); drawCtx.lineWidth = drawWidth; };
-        drawToolbar.querySelector('#draw-eraser').onclick = () => { drawEraser = !drawEraser; drawCtx.strokeStyle = drawEraser ? '#fff' : drawColor; };
+        if (drawToolbar) {
+            drawToolbar.querySelector('#draw-color').oninput = e => { drawColor = e.target.value; drawCtx.strokeStyle = drawColor; };
+            drawToolbar.querySelector('#draw-width').oninput = e => { drawWidth = parseInt(e.target.value); drawCtx.lineWidth = drawWidth; };
+            drawToolbar.querySelector('#draw-eraser').onclick = () => { drawEraser = !drawEraser; drawCtx.strokeStyle = drawEraser ? '#fff' : drawColor; };
+        }
 
         drawCtx.lineWidth = drawWidth;
         drawCtx.lineJoin = 'round';
@@ -1341,6 +1835,11 @@
             if (!state.pdfJsDoc) return;
             state.pageNum = num;
             els.pageNum.textContent = num;
+            // Sync mobile page indicator
+            const mPageNum = document.getElementById('m-page-num');
+            const mPageCount = document.getElementById('m-page-count');
+            if (mPageNum) mPageNum.textContent = num;
+            if (mPageCount) mPageCount.textContent = state.pdfJsDoc.numPages;
 
             const page = await state.pdfJsDoc.getPage(num);
             const viewport = page.getViewport({ scale: state.scale });
