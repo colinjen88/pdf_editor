@@ -1,0 +1,143 @@
+{
+  "app": {
+    "title": "Vibe PDF Editor"
+  },
+  "toolbar": {
+    "cursor": "Select",
+    "text": "Text Annotation",
+    "draw": "Draw",
+    "rotate": "Rotate",
+    "delete": "Delete Page",
+    "undo": "Undo",
+    "redo": "Redo"
+  },
+  "header": {
+    "openFile": "Open PDF",
+    "compress": "Compress PDF",
+    "batch": "Batch",
+    "api": "API / Collab",
+    "convert": "Convert",
+    "export": "Export PDF",
+    "darkMode": "Switch to Light Mode",
+    "lightMode": "Switch to Dark Mode",
+    "language": "Language"
+  },
+  "sidebar": {
+    "insertBlank": "Insert Blank Page",
+    "insertImage": "Insert Image",
+    "merge": "Merge Selected",
+    "split": "Split Page",
+    "duplicate": "Duplicate Page",
+    "insertSignature": "Insert Signature Field",
+    "pages": "Pages"
+  },
+  "editor": {
+    "dropZone": "Drop PDF here",
+    "dropZoneOr": "or",
+    "openFile": "Select File",
+    "page": "Page",
+    "of": "/",
+    "prev": "Prev",
+    "next": "Next"
+  },
+  "draw": {
+    "color": "Color",
+    "width": "Width",
+    "eraser": "Eraser"
+  },
+  "annotation": {
+    "color": "Color",
+    "font": "Font",
+    "size": "Size"
+  },
+  "search": {
+    "placeholder": "Search text...",
+    "search": "Search",
+    "noResults": "No results found",
+    "results": "results"
+  },
+  "compress": {
+    "title": "Compress PDF",
+    "mode": "Compression Mode",
+    "lossless": "Lossless (optimize structure)",
+    "raster": "Raster (convert to images)",
+    "scale": "Resolution Scale",
+    "quality": "JPEG Quality",
+    "password": "PDF Password (optional)",
+    "passwordPlaceholder": "Set password (coming soon)",
+    "cancel": "Cancel",
+    "confirm": "Compress",
+    "processing": "Compressing...",
+    "success": "PDF compressed successfully",
+    "safeFilter": "Remove non-standard objects (XFA/scripts/rich media)",
+    "warning": "Warning: Raster compression converts PDF to images. Text will not be searchable."
+  },
+  "batch": {
+    "title": "Batch Operations",
+    "selectHint": "Select pages in the page list first",
+    "delete": "Delete selected pages",
+    "merge": "Merge selected pages to new PDF",
+    "export": "Export selected pages",
+    "compress": "Batch compress",
+    "cancel": "Cancel",
+    "confirm": "Execute",
+    "noSelection": "Please select pages first"
+  },
+  "convert": {
+    "title": "Format Conversion",
+    "selectFormat": "Select output format",
+    "word": "Word Document (.docx) — text extraction only",
+    "png": "PNG Images (one per page)",
+    "jpg": "JPG Images (one per page)",
+    "cancel": "Cancel",
+    "confirm": "Convert",
+    "processing": "Converting...",
+    "wordSuccess": "Word file downloaded",
+    "imageSuccess": "Image downloaded"
+  },
+  "api": {
+    "title": "API / Collaboration",
+    "exportHint": "Export current PDF to an external API endpoint",
+    "export": "Export to API",
+    "collabHint": "Generate a collaboration link (coming soon)",
+    "collab": "Generate Link",
+    "cancel": "Close"
+  },
+  "settings": {
+    "title": "Settings",
+    "theme": "Theme Color",
+    "language": "Language",
+    "indigo": "Indigo",
+    "emerald": "Emerald",
+    "rose": "Rose",
+    "amber": "Amber"
+  },
+  "toast": {
+    "exported": "PDF exported successfully",
+    "signatureInserted": "Signature field inserted",
+    "processing": "Processing...",
+    "undone": "Action undone",
+    "redone": "Action redone",
+    "noUndo": "Nothing to undo",
+    "noRedo": "Nothing to redo",
+    "pageDeleted": "Page deleted",
+    "pageRotated": "Page rotated",
+    "pageInserted": "Page inserted",
+    "pageDuplicated": "Page duplicated",
+    "pageSplit": "Page split",
+    "pageMerged": "Pages merged",
+    "pageReordered": "Pages reordered",
+    "loadError": "Failed to load PDF",
+    "xfaWarning": "XFA dynamic form detected, some features may be limited",
+    "scriptWarning": "Embedded script detected and skipped",
+    "unsafeWarning": "Unsafe content detected",
+    "noSelection": "Please select pages first",
+    "minPages": "Must keep at least one page"
+  },
+  "security": {
+    "xfa": "XFA dynamic form detected",
+    "script": "Embedded script detected",
+    "richMedia": "Rich media embed detected",
+    "unsafe": "This PDF contains non-standard objects. Consider enabling Safe Filter."
+  }
+}

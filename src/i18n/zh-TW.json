@@ -1,0 +1,143 @@
+{
+  "app": {
+    "title": "Vibe PDF 編輯器"
+  },
+  "toolbar": {
+    "cursor": "選取",
+    "text": "文字標註",
+    "draw": "手繪",
+    "rotate": "旋轉",
+    "delete": "刪除頁面",
+    "undo": "復原",
+    "redo": "重做"
+  },
+  "header": {
+    "openFile": "開啟 PDF",
+    "compress": "壓縮 PDF",
+    "batch": "批次處理",
+    "api": "API 協作",
+    "convert": "格式轉換",
+    "export": "匯出 PDF",
+    "darkMode": "切換為亮色主題",
+    "lightMode": "切換為深色主題",
+    "language": "語言"
+  },
+  "sidebar": {
+    "insertBlank": "插入空白頁",
+    "insertImage": "插入圖片",
+    "merge": "合併選取頁",
+    "split": "分割頁面",
+    "duplicate": "複製頁面",
+    "insertSignature": "插入簽章欄位",
+    "pages": "頁面"
+  },
+  "editor": {
+    "dropZone": "拖曳 PDF 至此處",
+    "dropZoneOr": "或",
+    "openFile": "選擇檔案",
+    "page": "頁",
+    "of": "/",
+    "prev": "上一頁",
+    "next": "下一頁"
+  },
+  "draw": {
+    "color": "顏色",
+    "width": "寬度",
+    "eraser": "橡皮擦"
+  },
+  "annotation": {
+    "color": "顏色",
+    "font": "字體",
+    "size": "大小"
+  },
+  "search": {
+    "placeholder": "搜尋文字...",
+    "search": "搜尋",
+    "noResults": "找不到結果",
+    "results": "個結果"
+  },
+  "compress": {
+    "title": "壓縮 PDF",
+    "mode": "壓縮模式",
+    "lossless": "無損壓縮（最佳化結構）",
+    "raster": "柵格化壓縮（轉為圖片）",
+    "scale": "解析度比例",
+    "quality": "JPEG 品質",
+    "password": "PDF 密碼保護（選填）",
+    "passwordPlaceholder": "設定密碼（功能開發中）",
+    "cancel": "取消",
+    "confirm": "開始壓縮",
+    "processing": "壓縮中...",
+    "success": "PDF 壓縮完成",
+    "safeFilter": "移除非標準物件（XFA/嵌入腳本/多媒體）",
+    "warning": "注意：柵格化壓縮會將 PDF 轉換為圖片，文字將無法搜尋。"
+  },
+  "batch": {
+    "title": "批次處理",
+    "selectHint": "請先在頁面列表中選取頁面",
+    "delete": "批次刪除選取頁",
+    "merge": "合併選取頁為新 PDF",
+    "export": "批次匯出選取頁",
+    "compress": "批次壓縮",
+    "cancel": "取消",
+    "confirm": "執行",
+    "noSelection": "請先選取頁面"
+  },
+  "convert": {
+    "title": "格式轉換",
+    "selectFormat": "選擇輸出格式",
+    "word": "Word 文件 (.docx) — 純文字萃取",
+    "png": "PNG 圖片（每頁分別匯出）",
+    "jpg": "JPG 圖片（每頁分別匯出）",
+    "cancel": "取消",
+    "confirm": "開始轉換",
+    "processing": "轉換中...",
+    "wordSuccess": "Word 檔案已下載",
+    "imageSuccess": "圖片已下載"
+  },
+  "api": {
+    "title": "API / 協作",
+    "exportHint": "將目前 PDF 匯出至外部 API 端點",
+    "export": "匯出至 API",
+    "collabHint": "產生協作連結（功能開發中）",
+    "collab": "產生協作連結",
+    "cancel": "關閉"
+  },
+  "settings": {
+    "title": "設定",
+    "theme": "主題顏色",
+    "language": "語言",
+    "indigo": "靛藍",
+    "emerald": "翡翠綠",
+    "rose": "玫瑰紅",
+    "amber": "琥珀黃"
+  },
+  "toast": {
+    "exported": "已匯出 PDF 檔案",
+    "signatureInserted": "已插入簽章欄位",
+    "processing": "處理中...",
+    "undone": "已還原操作",
+    "redone": "已重做操作",
+    "noUndo": "無可還原操作",
+    "noRedo": "無可重做操作",
+    "pageDeleted": "已刪除頁面",
+    "pageRotated": "已旋轉頁面",
+    "pageInserted": "已插入頁面",
+    "pageDuplicated": "已複製頁面",
+    "pageSplit": "已分割頁面",
+    "pageMerged": "已合併頁面",
+    "pageReordered": "已重新排序",
+    "loadError": "載入 PDF 失敗",
+    "xfaWarning": "偵測到 XFA 動態表單，部分功能可能受限",
+    "scriptWarning": "偵測到嵌入腳本，已略過",
+    "unsafeWarning": "偵測到不安全內容",
+    "noSelection": "請先選取頁面",
+    "minPages": "至少保留一頁"
+  },
+  "security": {
+    "xfa": "偵測到 XFA 動態表單",
+    "script": "偵測到嵌入腳本",
+    "richMedia": "偵測到多媒體嵌入",
+    "unsafe": "此 PDF 包含非標準物件，建議開啟「安全過濾」"
+  }
+}

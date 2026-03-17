@@ -1,0 +1,137 @@
+@import '@fontsource/inter/300.css';
+@import '@fontsource/inter/400.css';
+@import '@fontsource/inter/500.css';
+@import '@fontsource/inter/600.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-vibe-bg text-vibe-text overflow-hidden;
+    font-family: 'Inter', sans-serif;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-vibe-surface;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #4A5568;
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #718096;
+  }
+}
+
+@layer components {
+  .tool-btn {
+    @apply p-3 rounded-2xl text-gray-300 hover:text-white hover:bg-vibe-surface transition-all duration-200 flex flex-col items-center gap-1.5 text-sm;
+  }
+
+  .tool-btn.active {
+    @apply bg-indigo-600/20 text-indigo-400 border border-indigo-500/30;
+  }
+
+  .tool-btn-emerald.active {
+    @apply bg-emerald-600/20 text-emerald-400 border border-emerald-500/30;
+  }
+
+  .tool-btn-rose.active {
+    @apply bg-rose-600/20 text-rose-400 border border-rose-500/30;
+  }
+
+  .tool-btn-amber.active {
+    @apply bg-amber-600/20 text-amber-400 border border-amber-500/30;
+  }
+
+  .canvas-container {
+    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.5);
+    transition: all 0.3s ease;
+  }
+
+  .draggable-text {
+    position: absolute;
+    cursor: move;
+    border: 1px dashed transparent;
+    padding: 2px 6px;
+    background: rgba(0, 0, 0, 0.1);
+    user-select: none;
+  }
+
+  .draggable-text:hover {
+    border-color: rgba(99, 102, 241, 0.5);
+  }
+
+  .draggable-text.editing {
+    border-color: rgba(99, 102, 241, 0.8);
+    background: rgba(99, 102, 241, 0.05);
+    cursor: text;
+  }
+
+  .search-highlight {
+    background: linear-gradient(90deg, #fef08a 60%, #f59e0b 100%);
+    color: #222;
+    border-radius: 4px;
+    padding: 0 2px;
+    box-shadow: 0 0 2px #f59e0b;
+  }
+
+  /* Page item drag styles */
+  .page-item {
+    @apply relative cursor-pointer transition-all duration-150;
+  }
+
+  .page-item.dragging {
+    @apply opacity-50 scale-95;
+  }
+
+  .page-item.drag-over {
+    @apply border-t-2 border-indigo-400;
+  }
+
+  /* Mobile sidebar */
+  .sidebar-drawer {
+    @apply fixed right-0 top-0 h-full w-64 bg-vibe-surface border-l border-vibe-border z-40;
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+  }
+
+  .sidebar-drawer.open {
+    transform: translateX(0);
+  }
+
+  /* Mobile safe area */
+  .mobile-safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  /* Compact button for header */
+  .header-btn {
+    @apply px-3 py-1.5 rounded-lg text-gray-300 hover:text-white hover:bg-vibe-surface/80 transition-all duration-200 flex items-center gap-1.5 text-sm;
+  }
+
+  .header-btn-primary {
+    @apply px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white transition-all duration-200 flex items-center gap-1.5 text-sm font-medium;
+  }
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
