@@ -1,0 +1,15 @@
+# .htaccess for Hostinger Shared Hosting (seobi.tw/pdf-edit)
+# Forward all traffic to https
+RewriteEngine On
+RewriteCond %{HTTPS} off
+RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# SPA Rewrite rules
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /pdf-edit/
+  RewriteRule ^index\.html$ - [L]
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule . /pdf-edit/index.html [L]
+</IfModule>
