@@ -6,10 +6,7 @@ import { PDFDocument } from 'pdf-lib'
 import type { FormField } from '../stores/types'
 
 // Configure PDF.js worker
-pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-  'pdfjs-dist/build/pdf.worker.min.mjs',
-  import.meta.url
-).toString()
+pdfjsLib.GlobalWorkerOptions.workerSrc = `${import.meta.env.BASE_URL}pdf.worker.min.mjs`
 
 export interface SecurityScanResult {
   hasXfa: boolean

@@ -4,10 +4,7 @@ import * as pdfjsLib from 'pdfjs-dist'
 import { arrayMove, computeNewIndex } from '../utils/arrayMove'
 import type { Annotation, PageDetail, FormField } from '../stores/types'
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-  'pdfjs-dist/build/pdf.worker.min.mjs',
-  import.meta.url
-).toString()
+pdfjsLib.GlobalWorkerOptions.workerSrc = `${import.meta.env.BASE_URL}pdf.worker.min.mjs`
 
 // pdf-lib doesn't have movePage; implement by copying all pages in new order
 async function reorderPagesInDoc(pdfDoc: PDFDocument, fromIndex: number, toIndex: number): Promise<void> {

@@ -4,10 +4,7 @@ import * as pdfjsLib from 'pdfjs-dist'
 import { buildEditedPdfBytes } from './pdfExporter'
 import type { Annotation } from '../stores/types'
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-  'pdfjs-dist/build/pdf.worker.min.mjs',
-  import.meta.url
-).toString()
+pdfjsLib.GlobalWorkerOptions.workerSrc = `${import.meta.env.BASE_URL}pdf.worker.min.mjs`
 
 export interface CompressOptions {
   mode: 'lossless' | 'raster'

@@ -57,6 +57,14 @@ export default function App() {
       const count = usePdfStore.getState().totalPages
       initPages(count)
       historyStore.reset()
+      const state = useEditorStore.getState()
+      historyStore.push({
+        pageNum: state.pageNum,
+        annotations: JSON.parse(JSON.stringify(state.annotations)),
+        drawings: [...state.drawings],
+        pagesDetails: JSON.parse(JSON.stringify(state.pagesDetails)),
+        formFields: usePdfStore.getState().formFields ? JSON.parse(JSON.stringify(usePdfStore.getState().formFields)) : null,
+      })
       setSelectedIndices([])
     } catch (e) {
       console.error(e)
@@ -70,6 +78,14 @@ export default function App() {
     const count = usePdfStore.getState().totalPages
     initPages(count)
     historyStore.reset()
+    const state = useEditorStore.getState()
+    historyStore.push({
+      pageNum: state.pageNum,
+      annotations: JSON.parse(JSON.stringify(state.annotations)),
+      drawings: [...state.drawings],
+      pagesDetails: JSON.parse(JSON.stringify(state.pagesDetails)),
+      formFields: usePdfStore.getState().formFields ? JSON.parse(JSON.stringify(usePdfStore.getState().formFields)) : null,
+    })
     setSelectedIndices([])
   }, [initPages, historyStore])
 

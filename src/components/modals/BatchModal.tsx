@@ -4,6 +4,7 @@ import { Modal } from '../ui/Modal'
 import { Button } from '../ui/Button'
 import { usePdfStore } from '../../stores/usePdfStore'
 import { useEditorStore } from '../../stores/useEditorStore'
+import { useHistoryStore } from '../../stores/useHistoryStore'
 import { useUiStore } from '../../stores/useUiStore'
 import { exportSelectedPages } from '../../services/pdfExporter'
 import { deletePageAt, rebuildPdfJsDoc as rebuildPdfJs } from '../../services/pdfPageOps'
@@ -49,6 +50,13 @@ export function BatchModal({ open, onClose, selectedIndices, onPdfUpdated }: Pro
       if (doBatchDelete) {
         const sorted = [...selectedIndices].sort((a, b) => b - a)
         let { annotations, drawings, pagesDetails, pageNum } = editorStore
+        useHistoryStore.getState().push({
+          pageNum,
+          annotations: JSON.parse(JSON.stringify(annotations)),
+          drawings: [...drawings],
+          pagesDetails: JSON.parse(JSON.stringify(pagesDetails)),
+          formFields: usePdfStore.getState().formFields ? JSON.parse(JSON.stringify(usePdfStore.getState().formFields)) : null,
+        })
         let details = [...pagesDetails]
         for (const idx of sorted) {
           const result = await deletePageAt(pdfDoc, idx, annotations, drawings)
@@ -70,6 +78,13 @@ export function BatchModal({ open, onClose, selectedIndices, onPdfUpdated }: Pro
       }
 
       if (doBatchMerge) {
+        useHistoryStore.getState().push({
+          pageNum: editorStore.pageNum,
+          annotations: JSON.parse(JSON.stringify(editorStore.annotations)),
+          drawings: [...editorStore.drawings],
+          pagesDetails: JSON.parse(JSON.stringify(editorStore.pagesDetails)),
+          formFields: usePdfStore.getState().formFields ? JSON.parse(JSON.stringify(usePdfStore.getState().formFields)) : null,
+        })
         const sorted = [...selectedIndices].sort((a, b) => a - b)
         for (let i = sorted.length - 1; i >= 1; i--) {
           pdfDoc.removePage(sorted[i])
@@ -100,11 +115,27 @@ export function BatchModal({ open, onClose, selectedIndices, onPdfUpdated }: Pro
           <p className="text-gray-400 text-sm">已選取 {selectedIndices.length} 頁</p>
         )}
         <label className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer">
-          <input type="checkbox" checked={doBatchDelete} onChange={e => setDoBatchDelete(e.target.checked)} className="accent-red-500 w-4 h-4" />
+          <input 
+            type="checkbox" 
+            checked={doBatchDelete} 
+            onChange={e => {
+              setDoBatchDelete(e.target.checked)
+              if (e.target.checked) setDoBatchMerge(false)
+            }} 
+            className="accent-red-500 w-4 h-4" 
+          />
           {t('batch.delete')}
         </label>
         <label className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer">
-          <input type="checkbox" checked={doBatchMerge} onChange={e => setDoBatchMerge(e.target.checked)} className="accent-indigo-500 w-4 h-4" />
+          <input 
+            type="checkbox" 
+            checked={doBatchMerge} 
+            onChange={e => {
+              setDoBatchMerge(e.target.checked)
+              if (e.target.checked) setDoBatchDelete(false)
+            }} 
+            className="accent-indigo-500 w-4 h-4" 
+          />
           {t('batch.merge')}
         </label>
         <label className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer">

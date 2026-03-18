@@ -1,7 +1,24 @@
-// PDF export service (embed annotations and drawings into PDF)
 import { PDFDocument, rgb } from 'pdf-lib'
+import fontkit from '@pdf-lib/fontkit'
 import type { Annotation } from '../stores/types'
 
+let fallbackFontBytes: ArrayBuffer | null = null;
+async function getFallbackFontBytes() {
+  if (!fallbackFontBytes) {
+    const res = await fetch('https://cdn.jsdelivr.net/fontsource/fonts/noto-sans-tc@latest/400-normal.ttf')
+    fallbackFontBytes = await res.arrayBuffer()
+  }
+  return fallbackFontBytes;
+}
+
+function hexToRgb(hex: string) {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result ? rgb(
+    parseInt(result[1], 16) / 255,
+    parseInt(result[2], 16) / 255,
+    parseInt(result[3], 16) / 255
+  ) : rgb(0,0,0);
+}
 function dataUrlToUint8Array(dataUrl: string): Uint8Array {
   const base64 = dataUrl.split(',')[1]
   const binary = atob(base64)
@@ -18,6 +35,16 @@ export async function buildEditedPdfBytes(
 ): Promise<Uint8Array> {
   const baseBytes = await pdfDoc.save()
   const tempDoc = await PDFDocument.load(baseBytes)
+  tempDoc.registerFontkit(fontkit)
+
+  let fallbackFont: any = null;
+  try {
+    const fontBytes = await getFallbackFontBytes();
+    fallbackFont = await tempDoc.embedFont(fontBytes);
+  } catch (e) {
+    console.warn("Failed to load fallback font", e);
+  }
+
   const pages = tempDoc.getPages()
 
   for (let i = 0; i < pages.length; i++) {
@@ -33,10 +60,11 @@ export async function buildEditedPdfBytes(
           x: pdfX,
           y: pdfY,
           size: (anno.size / scale) * 1.5,
-          color: rgb(0, 0, 0),
+          color: hexToRgb(anno.color),
+          font: fallbackFont || undefined,
         })
-      } catch {
-        // Font embedding may fail for some characters; skip silently
+      } catch (e) {
+        console.warn("Text embedding failed for:", anno.content, e)
       }
     }
 

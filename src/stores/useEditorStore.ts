@@ -1,9 +1,21 @@
 import { create } from 'zustand'
 import type { EditorStore, ToolType, Annotation, PageDetail } from './types'
+import { useHistoryStore } from './useHistoryStore'
+import { usePdfStore } from './usePdfStore'
 
 function uid() {
   if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID()
   return Math.random().toString(36).slice(2)
+}
+
+function saveHistory(state: EditorStore) {
+  useHistoryStore.getState().push({
+    pageNum: state.pageNum,
+    annotations: JSON.parse(JSON.stringify(state.annotations)),
+    drawings: [...state.drawings],
+    pagesDetails: JSON.parse(JSON.stringify(state.pagesDetails)),
+    formFields: usePdfStore.getState().formFields ? JSON.parse(JSON.stringify(usePdfStore.getState().formFields)) : null,
+  })
 }
 
 export const useEditorStore = create<EditorStore>((set, get) => ({
@@ -31,6 +43,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
   setAnnoSize: (annoSize) => set({ annoSize }),
 
   addAnnotation: (pageIndex, anno) => {
+    saveHistory(get())
     const annotations = [...get().annotations]
     if (!annotations[pageIndex]) annotations[pageIndex] = []
     annotations[pageIndex] = [...annotations[pageIndex], { ...anno, id: uid() }]
@@ -38,6 +51,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
   },
 
   updateAnnotation: (pageIndex, id, updates) => {
+    saveHistory(get())
     const annotations = get().annotations.map((pageAnnos, i) => {
       if (i !== pageIndex) return pageAnnos
       return pageAnnos.map(a => a.id === id ? { ...a, ...updates } : a)
@@ -46,6 +60,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
   },
 
   removeAnnotation: (pageIndex, id) => {
+    saveHistory(get())
     const annotations = get().annotations.map((pageAnnos, i) => {
       if (i !== pageIndex) return pageAnnos
       return pageAnnos.filter(a => a.id !== id)
@@ -54,6 +69,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
   },
 
   saveDrawing: (pageIndex, dataUrl) => {
+    saveHistory(get())
     const drawings = [...get().drawings]
     drawings[pageIndex] = dataUrl
     set({ drawings })
@@ -69,6 +85,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
   },
 
   reorderPages: (fromIndex, toIndex) => {
+    saveHistory(get())
     const { annotations, drawings, pagesDetails, pageNum } = get()
     const move = <T>(arr: T[]) => {
       const result = [...arr]
@@ -89,6 +106,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
   },
 
   insertPageAt: (index) => {
+    saveHistory(get())
     const { annotations, drawings, pagesDetails } = get()
     const newAnnotations = [...annotations]
     const newDrawings = [...drawings]
@@ -100,6 +118,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
   },
 
   removePageAt: (index) => {
+    saveHistory(get())
     const { annotations, drawings, pagesDetails, pageNum } = get()
     const newAnnotations = [...annotations]
     const newDrawings = [...drawings]
@@ -112,6 +131,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
   },
 
   duplicatePageAt: (index) => {
+    saveHistory(get())
     const { annotations, drawings, pagesDetails } = get()
     const newAnnotations = [...annotations]
     const newDrawings = [...drawings]
@@ -123,6 +143,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
   },
 
   splitPageAt: (index) => {
+    saveHistory(get())
     const { annotations, drawings, pagesDetails } = get()
     const newAnnotations = [...annotations]
     const newDrawings = [...drawings]
@@ -134,6 +155,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
   },
 
   rotatePage: (pageIndex, delta) => {
+    saveHistory(get())
     const pagesDetails = get().pagesDetails.map((d, i) =>
       i === pageIndex ? { rotation: (d.rotation + delta) % 360 } : d
     )

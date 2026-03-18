@@ -8,7 +8,11 @@
       "Bash(npx tsc:*)",
       "Bash(npm run:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(rustc:*)",
+      "Bash(npm list:*)",
+      "Bash(cd:*)",
+      "Bash(ls:*)"
     ]
   }
 }
