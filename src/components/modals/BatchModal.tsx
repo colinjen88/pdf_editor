@@ -48,13 +48,21 @@ export function BatchModal({ open, onClose, selectedIndices, onPdfUpdated }: Pro
 
       if (doBatchDelete) {
         const sorted = [...selectedIndices].sort((a, b) => b - a)
-        let { annotations, drawings } = editorStore
+        let { annotations, drawings, pagesDetails, pageNum } = editorStore
+        let details = [...pagesDetails]
         for (const idx of sorted) {
           const result = await deletePageAt(pdfDoc, idx, annotations, drawings)
           annotations = result.annotations
           drawings = result.drawings
+          details.splice(idx, 1)
         }
-        editorStore.initPages(pdfDoc.getPageCount())
+        const pageCount = pdfDoc.getPageCount()
+        useEditorStore.setState({
+          annotations,
+          drawings,
+          pagesDetails: details,
+          pageNum: Math.max(1, Math.min(pageNum, pageCount)),
+        })
         const { pdfjsDoc } = await rebuildPdfJs(pdfDoc)
         usePdfStore.setState({ pdfJsDoc: pdfjsDoc, totalPages: pdfjsDoc.numPages })
         showToast('批次刪除完成', 'success')

@@ -37,13 +37,17 @@ export function PageList({ selectedIndices, onSelectionChange }: Props) {
       return
     }
     if (!confirm('確定要刪除此頁嗎？')) return
-
-    const result = await deletePageAtOp(pdfDoc, pageIndex, annotations, drawings)
-    editorStore.removePageAt(pageIndex)
-    const { pdfjsDoc } = await rebuildPdfJsDoc(pdfDoc)
-    usePdfStore.setState({ pdfJsDoc: pdfjsDoc, totalPages: pdfjsDoc.numPages })
-    editorStore.setPage(result.newPageNum)
-    showToast('已刪除頁面', 'success')
+    try {
+      const result = await deletePageAtOp(pdfDoc, pageIndex, annotations, drawings)
+      editorStore.removePageAt(pageIndex)
+      const { pdfjsDoc } = await rebuildPdfJsDoc(pdfDoc)
+      usePdfStore.setState({ pdfJsDoc: pdfjsDoc, totalPages: pdfjsDoc.numPages })
+      editorStore.setPage(result.newPageNum)
+      showToast('已刪除頁面', 'success')
+    } catch (e) {
+      console.error(e)
+      showToast('刪除失敗', 'error')
+    }
   }, [pdfDoc, annotations, drawings, editorStore, showToast])
 
   const handleDrop = useCallback(async (fromIndex: number, toIndex: number) => {

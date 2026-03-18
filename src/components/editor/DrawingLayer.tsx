@@ -56,10 +56,16 @@ export const DrawingLayer = forwardRef<DrawingLayerRef, Props>(
       const pos = getPos(e)
       lastPosRef.current = pos
       const ctx = canvasRef.current!.getContext('2d')!
-      ctx.lineWidth = drawWidth
+      ctx.lineWidth = drawEraser ? drawWidth * 4 : drawWidth
       ctx.lineJoin = 'round'
       ctx.lineCap = 'round'
-      ctx.strokeStyle = drawEraser ? '#ffffff' : drawColor
+      if (drawEraser) {
+        ctx.globalCompositeOperation = 'destination-out'
+        ctx.strokeStyle = 'rgba(0,0,0,1)'
+      } else {
+        ctx.globalCompositeOperation = 'source-over'
+        ctx.strokeStyle = drawColor
+      }
     }
 
     const draw = (e: React.MouseEvent) => {

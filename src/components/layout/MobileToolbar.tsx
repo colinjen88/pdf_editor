@@ -25,12 +25,17 @@ export function MobileToolbar() {
     if (!pdfDoc) return
     if (pdfDoc.getPageCount() <= 1) { showToast(t('toast.minPages'), 'warning'); return }
     if (!confirm('確定要刪除此頁嗎？')) return
-    const result = await deletePageAtOp(pdfDoc, pageNum - 1, annotations, drawings)
-    useEditorStore.getState().removePageAt(pageNum - 1)
-    const { pdfjsDoc } = await rebuildPdfJsDoc(pdfDoc)
-    usePdfStore.setState({ pdfJsDoc: pdfjsDoc, totalPages: pdfjsDoc.numPages })
-    setPage(result.newPageNum)
-    showToast(t('toast.pageDeleted'), 'success')
+    try {
+      const result = await deletePageAtOp(pdfDoc, pageNum - 1, annotations, drawings)
+      useEditorStore.getState().removePageAt(pageNum - 1)
+      const { pdfjsDoc } = await rebuildPdfJsDoc(pdfDoc)
+      usePdfStore.setState({ pdfJsDoc: pdfjsDoc, totalPages: pdfjsDoc.numPages })
+      setPage(result.newPageNum)
+      showToast(t('toast.pageDeleted'), 'success')
+    } catch (e) {
+      console.error(e)
+      showToast('刪除失敗', 'error')
+    }
   }
 
   return (
@@ -64,17 +69,17 @@ export function MobileToolbar() {
         className={`flex flex-col items-center gap-0.5 p-2 rounded-xl ${tool === 'draw' ? 'text-indigo-400' : 'text-gray-400'}`}
       >
         <PencilSimple size={20} />
-        <span className="text-[10px]">繪圖</span>
+        <span className="text-[10px]">{t('toolbar.draw')}</span>
       </button>
 
       <button onClick={handleRotate} className="flex flex-col items-center gap-0.5 p-2 rounded-xl text-gray-400">
         <ArrowClockwise size={20} />
-        <span className="text-[10px]">旋轉</span>
+        <span className="text-[10px]">{t('toolbar.rotate')}</span>
       </button>
 
       <button onClick={handleDelete} className="flex flex-col items-center gap-0.5 p-2 rounded-xl text-red-400">
         <Trash size={20} />
-        <span className="text-[10px]">刪除</span>
+        <span className="text-[10px]">{t('toolbar.delete')}</span>
       </button>
     </div>
   )

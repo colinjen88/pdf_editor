@@ -1,89 +1,104 @@
 # Vibe PDF Editor
 
-一個現代化、安全、合規的 PDF 編輯器，基於 PDF.js 與 PDF-Lib，支援標準 PDF 編輯、壓縮、頁面管理，嚴格遵循 ISO 32000-1/2 規範。
+現代化、安全、可離線使用的 PDF 編輯器。基於 Vite + React + TypeScript + Zustand，支援 PWA 安裝。
 
 ---
 
 ## 功能特色
 
-- 支援標準 PDF 內容（文字、向量圖、圖片、標準表單）
-- 拖曳開啟 PDF，前端沙盒處理，保障隱私
-- 頁面縮圖、拖曳排序、插入空白頁/圖片
-- 文字標註、手寫繪圖、頁面旋轉、刪除
-- PDF 壓縮（無損/光柵化）
-- 主題切換、即時 toast 訊息、loading spinner
-- 嚴格遵循 ISO 32000-1/2，完全不支援 XFA
-- 匯出 PDF 自動移除非標準物件，安全合規
+- **PDF 檢視**：縮放、翻頁、頁面縮圖側欄
+- **頁面管理**：插入空白頁/圖片頁、刪除、複製、分割、合併、拖曳排序、旋轉
+- **手繪標記**：自由繪圖、橡皮擦、顏色/筆寬調整
+- **文字標註**：點擊插入可移動、可編輯的文字標籤，hover 刪除
+- **表單欄位**：自動偵測 PDF 表單欄位並顯示可填寫的輸入框
+- **PDF 匯出**：將標註與繪圖嵌入 PDF 後下載
+- **PDF 壓縮**：無損（Object Streams）/ 光柵化（JPEG）兩種模式
+- **格式轉換**：匯出為圖片（PNG/JPEG）、Word（.docx）
+- **批次操作**：同時對多頁進行匯出、壓縮、刪除、合併
+- **復原/重做**：Ctrl+Z / Ctrl+Y
+- **安全掃描**：開啟時自動偵測 XFA、嵌入式腳本、多媒體
+- **主題**：深色 UI，支援 Indigo/Rose/Emerald/Amber 主題色
+- **多語系**：繁體中文 / English
+- **PWA**：可安裝至桌面，完整離線使用
+- **響應式**：桌面/平板/手機自適應版面
 
-- 匯出 PDF 自動移除非標準物件，安全合規
+---
 
-## 📱 手機與平板優化 (v2.0 Update)
-- **響應式設計**：針對不同螢幕尺寸自動調整版面配置（手機、平板、桌面）。
-- **觸控友善**：按鈕與互動元素加大，方便手指點擊。
-- **手機專屬工具列**：
-  - 底部整合式工具列：包含頁面導航、選取/文字/繪圖工具切換。
-  - 側欄滑入式設計：節省螢幕空間，支援手勢關閉。
-  - 自動隱藏次要功能：在小螢幕上隱藏搜尋欄與進階設定，保持畫面簡潔。
-- **繪圖體驗優化**：繪圖工具列與搜尋列不再重疊，提供更流暢的操作體驗。
+## 使用方式
+
+### 線上版（部署後）
+用 Chrome / Edge 開啟網址 → 網址列右側出現「安裝」圖示 → 點擊後即安裝為桌面 App，可完全離線使用。
+
+### 本地開發
+```bash
+npm install
+npm run dev      # 開發伺服器 http://localhost:5173
+npm run build    # 生產建構 → dist/
+npm run preview  # 預覽 dist/
+```
 
 ---
 
 ## 技術架構
 
-- 前端：PDF.js（Apache 2.0）、PDF-Lib（MIT）
-- UI：Tailwind CSS、Phosphor Icons、Inter 字體
-- 無伺服器，所有操作皆在瀏覽器端完成
+| 類別 | 技術 |
+|------|------|
+| 建構 | Vite 6 |
+| 框架 | React 18 + TypeScript |
+| 狀態 | Zustand 5 |
+| CSS | Tailwind CSS v3（本地，離線可用） |
+| PDF 渲染 | pdfjs-dist v4 |
+| PDF 編輯 | pdf-lib v1.17.1 |
+| 圖示 | @phosphor-icons/react |
+| 字體 | @fontsource/inter（離線） |
+| 多語系 | react-i18next |
+| PWA | vite-plugin-pwa + Workbox |
+
+所有操作皆在瀏覽器端完成，無伺服器，PDF 檔案不會上傳至任何地方。
+
+---
+
+## 專案結構
+
+```
+src/
+├── App.tsx / main.tsx
+├── services/          # 純邏輯層
+│   ├── pdfLoader.ts   # 載入 + 安全掃描 + 表單偵測
+│   ├── pdfRenderer.ts # PDF.js canvas 渲染
+│   ├── pdfPageOps.ts  # 頁面操作
+│   ├── pdfExporter.ts # 嵌入標註/繪圖後匯出
+│   ├── pdfCompressor.ts
+│   ├── imageExporter.ts / wordExporter.ts
+│   └── fileSystem.ts  # File API（含 Tauri stub）
+├── stores/            # usePdfStore, useEditorStore, useHistoryStore, useUiStore
+├── components/
+│   ├── editor/        # PdfViewer, DrawingLayer, TextLayer, FormFieldLayer
+│   ├── layout/        # AppHeader, LeftToolbar, RightSidebar, Footer, MobileToolbar
+│   ├── modals/        # Compress, Batch, Convert, Settings
+│   ├── pages/         # PageItem, PageList（縮圖+拖放）
+│   ├── toolbars/      # DrawToolbar, AnnotationToolbar
+│   └── ui/            # Toast, Spinner, Modal, Button, IconButton
+├── i18n/              # zh-TW.json + en.json
+└── utils/
+public/
+├── icon.svg           # PWA icon 來源
+├── pwa-*.png          # 由 icon.svg 生成
+└── favicon.ico
+```
 
 ---
 
 ## 安全與合規
 
-- 僅處理標準 PDF 結構，拒絕 XFA 與嵌入式腳本
-- 匯出時自動檢查並移除非標準內容
-- 所有檔案操作皆在本地端，無資料外洩風險
-
----
-
-## 安裝與使用
-
-1. 下載或 clone 本專案
-2. 直接以瀏覽器開啟 `index.html`
-3. 拖曳 PDF 檔案或點擊「開啟 PDF」開始編輯
-
----
-
-## 開發者須知
-
-- 嚴格遵循 ISO 32000-1/2，請勿嘗試支援 XFA
-- 如需後端批次處理，可考慮 PDFium（Google Chrome 使用的引擎）
-- 歡迎 issue/PR 提出建議與改進
+- 僅處理標準 PDF 結構（ISO 32000-1/2），拒絕 XFA 動態表單與嵌入式腳本
+- 開啟檔案時自動掃描並警告非標準內容
+- 所有操作皆在本地端，無資料外洩風險
 
 ---
 
 ## 授權
 
-- PDF.js：Apache 2.0
-- PDF-Lib：MIT
+- pdfjs-dist：Apache 2.0
+- pdf-lib：MIT
 - 本專案：MIT
-
----
-
-## 參考資料
-
-- [ISO 32000-1/2 PDF 標準](https://www.iso.org/standard/51502.html)
-- [PDF.js 官方文件](https://mozilla.github.io/pdf.js/)
-- [PDF-Lib 官方文件](https://pdf-lib.js.org/)
-- [PDFium](https://pdfium.googlesource.com/pdfium/)
-
----
-
-## 預覽
-
-![Vibe PDF Editor 預覽](./preview.png)
-
----
-
-## 聯絡與貢獻
-
-- 歡迎 issue/PR
-- 作者：colinjen88

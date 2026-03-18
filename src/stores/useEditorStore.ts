@@ -1,5 +1,4 @@
 import { create } from 'zustand'
-import { nanoid } from 'nanoid'  // use crypto.randomUUID() instead if available
 import type { EditorStore, ToolType, Annotation, PageDetail } from './types'
 
 function uid() {

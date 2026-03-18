@@ -42,7 +42,11 @@ export async function compressPdf(
     const context = canvas.getContext('2d')!
     await page.render({ canvasContext: context as CanvasRenderingContext2D, viewport }).promise
     const jpegDataUrl = canvas.toDataURL('image/jpeg', options.quality)
-    const jpegImage = await compressedDoc.embedJpg(jpegDataUrl)
+    const base64 = jpegDataUrl.split(',')[1]
+    const binary = atob(base64)
+    const jpegBytes = new Uint8Array(binary.length)
+    for (let j = 0; j < binary.length; j++) jpegBytes[j] = binary.charCodeAt(j)
+    const jpegImage = await compressedDoc.embedJpg(jpegBytes)
     const newPage = compressedDoc.addPage([viewport.width, viewport.height])
     newPage.drawImage(jpegImage, { x: 0, y: 0, width: viewport.width, height: viewport.height })
   }

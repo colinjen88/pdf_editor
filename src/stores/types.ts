@@ -113,7 +113,6 @@ export interface UiStore {
   compressModalOpen: boolean
   batchModalOpen: boolean
   convertModalOpen: boolean
-  apiModalOpen: boolean
   settingsModalOpen: boolean
   toasts: ToastMessage[]
   loading: boolean
@@ -131,7 +130,7 @@ export interface UiStore {
   hideLoading: () => void
 }
 
-export type ModalName = 'compress' | 'batch' | 'convert' | 'api' | 'settings'
+export type ModalName = 'compress' | 'batch' | 'convert' | 'settings'
 
 export const THEME_COLORS: Record<ThemeColor, { accent: string; bg: string; accentClass: string }> = {
   indigo: { accent: '#6366F1', bg: '#0F1117', accentClass: 'indigo' },

@@ -12,7 +12,6 @@ import { AnnotationToolbar } from './components/toolbars/AnnotationToolbar'
 import { CompressModal } from './components/modals/CompressModal'
 import { BatchModal } from './components/modals/BatchModal'
 import { ConvertModal } from './components/modals/ConvertModal'
-import { ApiModal } from './components/modals/ApiModal'
 import { SettingsModal } from './components/modals/SettingsModal'
 import { ToastContainer } from './components/ui/Toast'
 import { Spinner } from './components/ui/Spinner'
@@ -29,7 +28,7 @@ export default function App() {
   const { pdfJsDoc, loadPdf, totalPages } = usePdfStore()
   const { pageNum, tool, initPages } = useEditorStore()
   const {
-    compressModalOpen, batchModalOpen, convertModalOpen, apiModalOpen, settingsModalOpen,
+    compressModalOpen, batchModalOpen, convertModalOpen, settingsModalOpen,
     closeModal, toasts, removeToast, loading, loadingMessage,
     showToast, showLoading, hideLoading
   } = useUiStore()
@@ -167,7 +166,6 @@ export default function App() {
         onPdfUpdated={() => setSelectedIndices([])}
       />
       <ConvertModal open={convertModalOpen} onClose={() => closeModal('convert')} />
-      <ApiModal open={apiModalOpen} onClose={() => closeModal('api')} />
       <SettingsModal open={settingsModalOpen} onClose={() => closeModal('settings')} />
 
       {/* Global overlays */}

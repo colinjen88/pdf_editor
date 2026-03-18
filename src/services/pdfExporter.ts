@@ -2,6 +2,14 @@
 import { PDFDocument, rgb } from 'pdf-lib'
 import type { Annotation } from '../stores/types'
 
+function dataUrlToUint8Array(dataUrl: string): Uint8Array {
+  const base64 = dataUrl.split(',')[1]
+  const binary = atob(base64)
+  const bytes = new Uint8Array(binary.length)
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i)
+  return bytes
+}
+
 export async function buildEditedPdfBytes(
   pdfDoc: PDFDocument,
   annotations: Annotation[][],
@@ -35,7 +43,7 @@ export async function buildEditedPdfBytes(
     const drawingDataUrl = drawings[i]
     if (drawingDataUrl) {
       try {
-        const pngImage = await tempDoc.embedPng(drawingDataUrl)
+        const pngImage = await tempDoc.embedPng(dataUrlToUint8Array(drawingDataUrl))
         const { width, height: h } = page.getSize()
         page.drawImage(pngImage, { x: 0, y: 0, width, height: h })
       } catch {

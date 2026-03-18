@@ -14,7 +14,6 @@ export const useUiStore = create<UiStore>((set, get) => ({
   compressModalOpen: false,
   batchModalOpen: false,
   convertModalOpen: false,
-  apiModalOpen: false,
   settingsModalOpen: false,
   toasts: [],
   loading: false,

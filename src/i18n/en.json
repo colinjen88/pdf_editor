@@ -15,7 +15,6 @@
     "openFile": "Open PDF",
     "compress": "Compress PDF",
     "batch": "Batch",
-    "api": "API / Collab",
     "convert": "Convert",
     "export": "Export PDF",
     "darkMode": "Switch to Light Mode",
@@ -95,14 +94,7 @@
     "wordSuccess": "Word file downloaded",
     "imageSuccess": "Image downloaded"
   },
-  "api": {
-    "title": "API / Collaboration",
-    "exportHint": "Export current PDF to an external API endpoint",
-    "export": "Export to API",
-    "collabHint": "Generate a collaboration link (coming soon)",
-    "collab": "Generate Link",
-    "cancel": "Close"
-  },
+
   "settings": {
     "title": "Settings",
     "theme": "Theme Color",

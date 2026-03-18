@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import {
   ArrowCounterClockwise, ArrowClockwise, FolderOpen,
-  ArrowsClockwise, StackSimple, LinkSimple, Export,
+  ArrowsClockwise, StackSimple, Export,
   Moon, Sun, List
 } from '@phosphor-icons/react'
 import { useUiStore } from '../../stores/useUiStore'
@@ -126,10 +126,6 @@ export function AppHeader({ onPdfLoaded }: Props) {
       <button onClick={() => openModal('batch')} className="header-btn" title={t('header.batch')}>
         <StackSimple size={16} />
         <span className="hidden lg:inline text-xs">{t('header.batch')}</span>
-      </button>
-      <button onClick={() => openModal('api')} className="header-btn" title={t('header.api')}>
-        <LinkSimple size={16} />
-        <span className="hidden lg:inline text-xs">{t('header.api')}</span>
       </button>
       <button onClick={() => openModal('convert')} className="header-btn" title={t('header.convert')}>
         <ArrowsClockwise size={16} />

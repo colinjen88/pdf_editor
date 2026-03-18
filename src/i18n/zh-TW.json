@@ -15,7 +15,6 @@
     "openFile": "開啟 PDF",
     "compress": "壓縮 PDF",
     "batch": "批次處理",
-    "api": "API 協作",
     "convert": "格式轉換",
     "export": "匯出 PDF",
     "darkMode": "切換為亮色主題",
@@ -95,14 +94,7 @@
     "wordSuccess": "Word 檔案已下載",
     "imageSuccess": "圖片已下載"
   },
-  "api": {
-    "title": "API / 協作",
-    "exportHint": "將目前 PDF 匯出至外部 API 端點",
-    "export": "匯出至 API",
-    "collabHint": "產生協作連結（功能開發中）",
-    "collab": "產生協作連結",
-    "cancel": "關閉"
-  },
+
   "settings": {
     "title": "設定",
     "theme": "主題顏色",

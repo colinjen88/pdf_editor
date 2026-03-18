@@ -31,12 +31,17 @@ export function LeftToolbar() {
     if (!pdfDoc) return
     if (pdfDoc.getPageCount() <= 1) { showToast(t('toast.minPages'), 'warning'); return }
     if (!confirm('確定要刪除此頁嗎？')) return
-    const result = await deletePageAtOp(pdfDoc, pageNum - 1, annotations, drawings)
-    useEditorStore.getState().removePageAt(pageNum - 1)
-    const { pdfjsDoc } = await rebuildPdfJsDoc(pdfDoc)
-    usePdfStore.setState({ pdfJsDoc: pdfjsDoc, totalPages: pdfjsDoc.numPages })
-    useEditorStore.getState().setPage(result.newPageNum)
-    showToast(t('toast.pageDeleted'), 'success')
+    try {
+      const result = await deletePageAtOp(pdfDoc, pageNum - 1, annotations, drawings)
+      useEditorStore.getState().removePageAt(pageNum - 1)
+      const { pdfjsDoc } = await rebuildPdfJsDoc(pdfDoc)
+      usePdfStore.setState({ pdfJsDoc: pdfjsDoc, totalPages: pdfjsDoc.numPages })
+      useEditorStore.getState().setPage(result.newPageNum)
+      showToast(t('toast.pageDeleted'), 'success')
+    } catch (e) {
+      console.error(e)
+      showToast('刪除失敗', 'error')
+    }
   }
 
   return (
