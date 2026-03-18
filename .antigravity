@@ -1,0 +1,63 @@
+# 專案部署守則 (Hostinger 一般網頁空間)
+
+你是一個輔助開發的 AI。本專案部署在 **Hostinger 一般網頁空間**（Shared Hosting），與 Docker VPS 架構完全不同。在進行任何與部署相關的任務前，請遵守以下規則：
+
+## 主機資訊
+- **主機 IP**：`145.79.28.71`
+- **主機類型**：Hostinger Shared Hosting (Linux)
+- **網域**：`seobi.tw/pdf-edit`
+- **控制面板**：hPanel (Hostinger 專屬)
+
+## 部署方式
+
+1. **上傳方式**
+   - 使用 **FTP / SFTP** 上傳檔案到主機
+   - 或使用 **Hostinger File Manager**（透過 hPanel 存取）
+   - 部署腳本範例：使用 `lftp` 或 `rsync over ssh`（如主機支援 SSH）
+
+2. **目錄結構**
+   - Web Root 通常為 `public_html/` 目錄
+   - 子網域對應子目錄：`public_html/subdomain-folder/`
+   - 請勿修改 `public_html/` 以外的系統檔案
+
+3. **.htaccess 配置**
+   - 一般空間使用 Apache，透過 `.htaccess` 管理路由與重導向
+   - SPA (Single Page Application) 需加入重寫規則：
+     ```
+     RewriteEngine On
+     RewriteBase /
+     RewriteRule ^index\.html$ - [L]
+     RewriteCond %{REQUEST_FILENAME} !-f
+     RewriteCond %{REQUEST_FILENAME} !-d
+     RewriteRule . /index.html [L]
+     ```
+   - 強制 HTTPS：
+     ```
+     RewriteEngine On
+     RewriteCond %{HTTPS} off
+     RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+     ```
+
+4. **PHP 設定（若適用）**
+   - PHP 版本可在 hPanel 中切換
+   - 使用 `.user.ini` 或 `php.ini` 覆蓋 PHP 設定
+   - 資料庫連線使用 `localhost` 而非外部 IP
+
+## ⚠️ 重要限制
+
+- **不支援 Docker**：一般空間無法執行 Docker 容器
+- **不支援自訂 Port**：所有流量皆走 80/443，無法開放其他 Port
+- **不支援背景程序**：無法執行 PM2 或長駐背景服務（Cron Job 除外）
+- **不需要 Caddy 設定**：反向代理由 Hostinger 的 Apache/LiteSpeed 處理
+- **SSL 由 Hostinger 管理**：不需額外申請或配置 SSL 憑證
+
+## 部署檢查清單
+
+- [ ] 確認檔案上傳到正確的 `public_html/` 路徑
+- [ ] 確認 `.htaccess` 設定正確（尤其是 SPA 路由）
+- [ ] 確認環境變數寫在前端 build 而非 `.env` 檔（前端在一般空間無法讀取 .env）
+- [ ] 確認資料庫連線字串使用 `localhost`
+- [ ] 確認檔案權限：目錄 `755`、檔案 `644`
+
+---
+附註：一般空間的限制較多，適合部署靜態網站、WordPress、或前端 SPA。若需要 Node.js 後端或 Docker，請改用 VPS 主機方案。
